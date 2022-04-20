@@ -24,6 +24,17 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six", "mypy", "pytest-mypy-plugins", "cloudpickle"]
 
 [[package]]
+name = "autoflake"
+version = "1.4"
+description = "Removes unused imports and unused variables"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pyflakes = ">=1.1.0"
+
+[[package]]
 name = "black"
 version = "22.3.0"
 description = "The uncompromising code formatter."
@@ -243,6 +254,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-whatthepatch"
+version = "1.0.0"
+description = "Typing stubs for whatthepatch"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.2.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -250,10 +269,18 @@ category = "dev"
 optional = false
 python-versions = ">=3.7"
 
+[[package]]
+name = "whatthepatch"
+version = "1.0.2"
+description = "A patch parsing and application library."
+category = "main"
+optional = false
+python-versions = "*"
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "5bb9d238aee947b2dab5b41afcecdb4e01a3f4199739ab88dc1a47c643d5b789"
+content-hash = "2b77367a16ecad5c895b7b2a44bdcc4730e01b586f8804c5e8b14f3d111e17a9"
 
 [metadata.files]
 astunparse = [
@@ -263,6 +290,9 @@ astunparse = [
 attrs = [
     {file = "attrs-21.4.0-py2.py3-none-any.whl", hash = "sha256:2d27e3784d7a565d36ab851fe94887c5eccd6a463168875832a1be79c82828b4"},
     {file = "attrs-21.4.0.tar.gz", hash = "sha256:626ba8234211db98e869df76230a137c4c40a12d72445c45d5f5b716f076e2fd"},
+]
+autoflake = [
+    {file = "autoflake-1.4.tar.gz", hash = "sha256:61a353012cff6ab94ca062823d1fb2f692c4acda51c76ff83a8d77915fba51ea"},
 ]
 black = [
     {file = "black-22.3.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:2497f9c2386572e28921fa8bec7be3e51de6801f7459dffd6e62492531c47e09"},
@@ -382,7 +412,15 @@ types-pkg-resources = [
     {file = "types-pkg_resources-0.1.3.tar.gz", hash = "sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"},
     {file = "types_pkg_resources-0.1.3-py2.py3-none-any.whl", hash = "sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c"},
 ]
+types-whatthepatch = [
+    {file = "types-whatthepatch-1.0.0.tar.gz", hash = "sha256:5d4d255164fc9eb8fab42d9caaa04a812850ef096233f2fbbc68242d37f1dd38"},
+    {file = "types_whatthepatch-1.0.0-py3-none-any.whl", hash = "sha256:85b9defc928e6d9bb18e9a11081329e993ca3ec12c6e19e6cfa6bce843908c71"},
+]
 typing-extensions = [
     {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
     {file = "typing_extensions-4.2.0.tar.gz", hash = "sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376"},
+]
+whatthepatch = [
+    {file = "whatthepatch-1.0.2-py2.py3-none-any.whl", hash = "sha256:6d920d6c328eda006f12ec05bc9eadb405957b18460520db195f9a21eb3336e1"},
+    {file = "whatthepatch-1.0.2.tar.gz", hash = "sha256:c540ea59173e0a291e19c742dd8b406c56e2be039a600edb7c6fc3ae4bbdfa9f"},
 ]

@@ -1,5 +1,30 @@
+from dataclasses import dataclass
+
+from whatthepatch import parse_patch
+from whatthepatch.patch import Change
+
 from ..types import Mutation
 
 
-def filter_changed_lines(mutation: Mutation) -> bool:
-    return True
+def _diff_matches(mutation: Mutation, change: Change) -> bool:
+    lineno = mutation.context.node.lineno
+    end_lineno = mutation.context.node.end_lineno or lineno
+    return change.new is not None and lineno <= change.new <= end_lineno
+
+
+@dataclass
+class PatchFilter:
+    patch: str
+
+    def __call__(self, mutation: Mutation) -> bool:
+        for diff in parse_patch(self.patch):
+            if diff.header is None or diff.changes is None:
+                continue
+            if diff.header.new_path != mutation.context.file.filename:
+                continue
+            return any(
+                _diff_matches(mutation, change)
+                for change in diff.changes
+                if change.new is not None
+            )
+        return False

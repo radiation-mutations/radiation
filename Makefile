@@ -12,3 +12,4 @@ lint:
 format:
 	poetry run isort .
 	poetry run black .
+	poetry run autoflake -i -r .

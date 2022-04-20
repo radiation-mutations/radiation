@@ -3,7 +3,7 @@ from ast import AST, Compare, cmpop
 from copy import deepcopy
 from typing import Dict, Iterable, Iterator, Type
 
-from ..types import Mutation
+from ..types import Context, Mutation
 
 MAPPING: Dict[Type[cmpop], Iterable[Type[cmpop]]] = {
     ast.In: (ast.NotIn,),
@@ -24,10 +24,10 @@ def _get_replacement_ops(op: cmpop) -> Iterable[cmpop]:
         yield op_type()
 
 
-def switch_compare_ops(node: AST) -> Iterator[Mutation]:
+def switch_compare_ops(node: AST, context: Context) -> Iterator[Mutation]:
     if isinstance(node, Compare):
         for index, op in enumerate(node.ops):
             for new_op in _get_replacement_ops(op):
                 new_node = deepcopy(node)
                 new_node.ops[index] = new_op
-                yield Mutation(new_node)
+                yield Mutation(new_node, context)

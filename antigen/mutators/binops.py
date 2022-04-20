@@ -2,7 +2,7 @@ import ast
 from ast import AST, BinOp, boolop, operator
 from typing import Dict, Iterator, Type, Union
 
-from ..types import Mutation
+from ..types import Context, Mutation
 
 Operator = Union[boolop, operator]
 
@@ -21,6 +21,8 @@ def _switch_op(op: Operator) -> Operator:
     return MAPPING[type(op)]()
 
 
-def switch_bin_ops(node: AST) -> Iterator[Mutation]:
+def switch_bin_ops(node: AST, context: Context) -> Iterator[Mutation]:
     if isinstance(node, BinOp) and type(node.op) in MAPPING:
-        yield Mutation(BinOp(left=node.left, op=_switch_op(node.op), right=node.right))
+        yield Mutation(
+            BinOp(left=node.left, op=_switch_op(node.op), right=node.right), context
+        )
