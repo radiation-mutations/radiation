@@ -3,8 +3,9 @@ from copy import copy, deepcopy
 from typing import Iterator, Sequence
 
 from .context import get_context
+from .mutation import Mutation
 from .mutators import Mutator
-from .types import Context, Mutation
+from .types import Context
 
 
 def gen_mutations(
@@ -17,8 +18,8 @@ def gen_mutations(
                 field, parent_context=context, mutators=mutators
             ):
                 new_node = copy(node)
-                setattr(new_node, name, mutation.node)
-                yield Mutation(new_node, mutation.context)
+                setattr(new_node, name, mutation.tree)
+                yield mutation.with_tree(new_node)
         elif isinstance(field, list):
             for index, item in enumerate(field):
                 if isinstance(item, AST):
@@ -26,7 +27,7 @@ def gen_mutations(
                         item, parent_context=context, mutators=mutators
                     ):
                         new_node = deepcopy(node)
-                        getattr(new_node, name)[index] = mutation.node
-                        yield Mutation(new_node, mutation.context)
+                        getattr(new_node, name)[index] = mutation.tree
+                        yield mutation.with_tree(new_node)
     for mutator in mutators:
         yield from mutator(node, context)

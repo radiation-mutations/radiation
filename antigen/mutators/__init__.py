@@ -1,7 +1,8 @@
 from ast import AST
 from typing import Callable, Iterable, Sequence
 
-from ..types import Context, Mutation
+from ..mutation import Mutation
+from ..types import Context
 from .binops import switch_bin_ops
 from .compare import switch_compare_ops
 from .constants import modify_constants

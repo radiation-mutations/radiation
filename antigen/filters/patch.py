@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from whatthepatch import parse_patch
 from whatthepatch.patch import Change
 
-from ..types import Mutation
+from ..mutation import Mutation
 
 
 def _diff_matches(mutation: Mutation, change: Change) -> bool:
@@ -20,7 +20,7 @@ class PatchFilter:
         for diff in parse_patch(self.patch):
             if diff.header is None or diff.changes is None:
                 continue
-            if diff.header.new_path != mutation.context.file.filename:
+            if diff.header.new_path != str(mutation.context.file.path):
                 continue
             return any(
                 _diff_matches(mutation, change)

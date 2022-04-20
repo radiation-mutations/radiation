@@ -1,6 +1,6 @@
 from typing import Callable, List, Sequence
 
-from ..types import Mutation
+from ..mutation import Mutation
 
 MutantFilter = Callable[[Mutation], bool]
 
