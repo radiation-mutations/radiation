@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from antigen import Antigen
+from antigen.config import Config
 from antigen.filters.patch import PatchFilter
 
 example_patch = """
@@ -18,16 +21,16 @@ b = 5 * 7
 
 
 if __name__ == "__main__":
-    antigen = Antigen(filters=[PatchFilter(example_patch)])
+    antigen = Antigen(
+        filters=[PatchFilter(example_patch)],
+        config=Config(project_root=Path("/home/yanayg/mutation/test/")),
+    )
 
-    for mut in antigen.gen_mutations_str(
-        file, path="/home/yanayg/mutation/test/test.py"
-    ):
+    for mut in antigen.gen_mutations_str(file, path="test.py"):
         print(mut)
         print(
             antigen.test_mutation(
                 mut,
-                project_root="/home/yanayg/mutation/test",
                 run_command="cat test.py",
             )
         )

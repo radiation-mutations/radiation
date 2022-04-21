@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional, Sequence, Union
 
+from .config import Config
 from .filters import MutantFilter, get_default_filters
 from .gen import gen_mutations
 from .mutation import Mutation
@@ -25,6 +26,7 @@ def _get_initial_context(path: Path, module: Module) -> Context:
 
 @dataclass(frozen=True)
 class Antigen:
+    config: Config
     runner: Optional[Runner] = field(default=None)
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
     mutators: Sequence[Mutator] = field(default_factory=get_default_mutators)
@@ -32,10 +34,13 @@ class Antigen:
     def gen_mutations_str(
         self, code: str, path: Union[str, Path] = "<code>"
     ) -> Iterable[Mutation]:
+        path = Path(path)
+        path = path if path.is_absolute() else self.config.project_root / path
+
         tree = parse(code)
         for mut in gen_mutations(
             tree,
-            parent_context=_get_initial_context(Path(path), tree),
+            parent_context=_get_initial_context(path, tree),
             mutators=self.mutators,
         ):
             if all(filter_fn(mut) for filter_fn in self.filters):
@@ -44,10 +49,6 @@ class Antigen:
     def gen_mutations(self, path: Union[str, Path]) -> Iterable[Mutation]:
         yield from self.gen_mutations_str(Path(path).read_text(), path)
 
-    def test_mutation(
-        self, mutation: Mutation, *, project_root: Union[str, Path], run_command: str
-    ) -> SuccessStatus:
-        runner = self.runner or TempDirRunner(
-            project_root=Path(project_root), run_command=run_command
-        )
-        return runner(mutation)
+    def test_mutation(self, mutation: Mutation, *, run_command: str) -> SuccessStatus:
+        runner = self.runner or TempDirRunner(run_command=run_command)
+        return runner(mutation, self.config)
