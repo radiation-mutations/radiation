@@ -58,6 +58,10 @@ class Antigen:
         path = path if path.is_absolute() else self.config.project_root / path
 
         tree = parse(code)
+
+        if len(tree.body) == 0:
+            return
+
         for mut in gen_mutations(
             tree,
             parent_context=_get_initial_context(path, tree),
