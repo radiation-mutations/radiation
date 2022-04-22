@@ -1,8 +1,16 @@
 [tool.poetry]
 name = "antigen"
-version = "0.1.0"
-description = ""
+version = "0.2.0"
+description = "Extendable mutation testing framework"
 authors = ["Yanay Goor <yanay.goor@gmail.com>"]
+license = "MIT"
+
+readme = "README.md"
+homepage = "https://github.com/YanayGoor/Antigen"
+repository = "https://github.com/YanayGoor/Antigen"
+documentation = "https://github.com/YanayGoor/Antigen"
+
+keywords = ["testing", "mutation"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
