@@ -1,7 +1,9 @@
+import os
 from ast import Module, parse
 from dataclasses import dataclass, field
+from glob import iglob
 from pathlib import Path
-from typing import Iterable, Optional, Sequence, Union
+from typing import Iterable, List, Optional, Sequence, Union
 
 from .config import Config
 from .filters import MutantFilter, get_default_filters
@@ -24,12 +26,30 @@ def _get_initial_context(path: Path, module: Module) -> Context:
     )
 
 
+def _find_files(search: str, extension: str = ".py") -> Iterable[Path]:
+    for path in iglob(search, recursive=True):
+        if Path(path).is_dir():
+            yield from _find_files(f"{path}/**/*", extension=extension)
+            continue
+        if not path.endswith(extension):
+            continue
+        yield Path(path)
+
+
 @dataclass(frozen=True)
 class Antigen:
     config: Config
     runner: Optional[Runner] = field(default=None)
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
     mutators: Sequence[Mutator] = field(default_factory=get_default_mutators)
+
+    def find_files(self, globs: Union[str, List[str]]) -> Iterable[Path]:
+        globs = [globs] if isinstance(globs, str) else globs
+        assert not any(
+            include.startswith("/") for include in globs
+        ), "globs must be relative"
+        for include in globs:
+            yield from _find_files(f"{self.config.project_root}{os.path.sep}{include}")
 
     def gen_mutations_str(
         self, code: str, path: Union[str, Path] = "<code>"

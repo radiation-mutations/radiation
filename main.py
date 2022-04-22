@@ -26,11 +26,12 @@ if __name__ == "__main__":
         config=Config(project_root=Path("/home/yanayg/mutation/test/")),
     )
 
-    for mut in antigen.gen_mutations_str(file, path="test.py"):
-        print(mut)
-        print(
-            antigen.test_mutation(
-                mut,
-                run_command="cat test.py",
+    for path in antigen.find_files("."):
+        for mut in antigen.gen_mutations(path):
+            print(mut)
+            print(
+                antigen.test_mutation(
+                    mut,
+                    run_command="cat test.py",
+                )
             )
-        )
