@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import subprocess
 from dataclasses import dataclass
 
 from whatthepatch import parse_patch
@@ -28,3 +31,10 @@ class PatchFilter:
                 if change.new is not None
             )
         return False
+
+    @classmethod
+    def from_git_diff(cls, target: str, base: str = "HEAD") -> PatchFilter:
+        completed_process = subprocess.run(
+            ["git", "diff", base, target], check=True, capture_output=True, text=True
+        )
+        return PatchFilter(patch=completed_process.stdout)
