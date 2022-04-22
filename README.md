@@ -69,9 +69,30 @@ for path in antigen.find_files("."):
         print(result)
 ```
 
+or use CLI
+
+```
+Usage: antigen [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -c, --config-file PATH   configuration file to use  [default:
+                           (.antigen.cfg)]
+  -p, --project-root PATH  path to project to run on  [default: (cwd)]
+  -i, --include TEXT       paths from which to take files for mutation, can be
+                           globs
+  --run-command TEXT       command to run to test a mutation  [default:
+                           (pytest)]
+  --help                   Show this message and exit.
+
+Commands:
+  run  run the mutation testing pipeline
+```
+
 
 ## Roadmap
-- [ ] Add CLI
+- [x] Add Basic CLI
+- [ ] Improve output in CLI
+- [ ] Support PatchFilter in CLI
 - [ ] Use `parso` instead of the built-in `ast` for cross-version mutations.
 - [ ] Add wrapper class for remote components (i.e. `RemoteFilter(hostname)`, `RemoteRunner(hostname)`).
 - [ ] Add Output component (with `JunitXMLOutput`, `GithubOutput`, `BitbucketOutput` builtins)
