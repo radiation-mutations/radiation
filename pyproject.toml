@@ -35,6 +35,7 @@ types-pkg-resources = "^0.1.3"
 autoflake = "^1.4"
 types-whatthepatch = "^1.0.0"
 types-toml = "^0.10.5"
+pytest = "^7.1.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

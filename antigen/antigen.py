@@ -26,14 +26,24 @@ def _get_initial_context(path: Path, module: Module) -> Context:
     )
 
 
-def _find_files(search: str, extension: str = ".py") -> Iterable[Path]:
+def _find_files(
+    search: str, extension: str = ".py", excludes: Optional[List[Path]] = None
+) -> Iterable[Path]:
     for path in iglob(search, recursive=True):
         if Path(path).is_dir():
-            yield from _find_files(f"{path}/**/*", extension=extension)
+            yield from _find_files(
+                f"{path}/**/*", extension=extension, excludes=excludes
+            )
             continue
         if not path.endswith(extension):
             continue
+        if excludes and any(exclude in Path(path).parents for exclude in excludes):
+            continue
         yield Path(path)
+
+
+def _assert_relative(paths: List[str]) -> None:
+    assert not any(path.startswith("/") for path in paths), "paths must be relative"
 
 
 @dataclass(frozen=True)
@@ -43,13 +53,24 @@ class Antigen:
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
     mutators: Sequence[Mutator] = field(default_factory=get_default_mutators)
 
-    def find_files(self, globs: Union[str, List[str]]) -> Iterable[Path]:
+    def find_files(
+        self,
+        globs: Union[str, List[str]],
+        *,
+        exclude: Optional[str] = None,
+        excludes: Optional[List[str]] = None,
+    ) -> Iterable[Path]:
         globs = [globs] if isinstance(globs, str) else globs
-        assert not any(
-            include.startswith("/") for include in globs
-        ), "globs must be relative"
-        for include in globs:
-            yield from _find_files(f"{self.config.project_root}{os.path.sep}{include}")
+        excludes = [exclude] if exclude else excludes or []
+        _assert_relative(globs)
+        _assert_relative(excludes)
+
+        for glob in globs:
+            yield from _find_files(
+                # include is a glob and thus won't be handled well by pathlib
+                os.path.join(self.config.project_root, glob),
+                excludes=[self.config.project_root / exclude for exclude in excludes],
+            )
 
     def gen_mutations_str(
         self, code: str, path: Union[str, Path] = "<code>"

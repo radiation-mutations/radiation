@@ -1,24 +1,20 @@
 import ast
-from ast import AST, BinOp, boolop, operator
-from typing import Dict, Iterator, Type, Union
+from ast import AST, BinOp, operator
+from typing import Dict, Iterator, Type
 
 from ..mutation import Mutation
 from ..types import Context
 
-Operator = Union[boolop, operator]
-
-MAPPING: Dict[Type[Operator], Type[Operator]] = {
+MAPPING: Dict[Type[operator], Type[operator]] = {
     ast.Add: ast.Sub,
     ast.Sub: ast.Add,
     ast.Mult: ast.Div,
     ast.Div: ast.Mult,
     ast.FloorDiv: ast.Div,
-    ast.Or: ast.And,
-    ast.And: ast.Or,
 }
 
 
-def _switch_op(op: Operator) -> Operator:
+def _switch_op(op: operator) -> operator:
     return MAPPING[type(op)]()
 
 

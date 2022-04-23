@@ -13,6 +13,7 @@ class CLIConfig:
     include: List[str] = field(default_factory=lambda: ["."])
     project_root: Path = field(default_factory=lambda: Path(os.getcwd()))
     run_command: str = field(default="pytest")
+    tests_dir: str = field(default="tests")
 
 
 DEFAULT_SECTIONS = ("antigen", "settings")
@@ -45,6 +46,7 @@ def _read_toml(
             return CLIConfig(
                 include=_toml_parse_list(config["include"]),
                 run_command=config["run_command"],
+                tests_dir=config["tests_dir"],
             )
     return None
 
@@ -63,6 +65,7 @@ def _read_cfg(
             return CLIConfig(
                 include=_cfg_parse_list(parser.get(section, "include")),
                 run_command=parser.get(section, "run_command"),
+                tests_dir=parser.get(section, "tests_dir"),
             )
     return None
 

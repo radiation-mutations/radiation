@@ -54,6 +54,13 @@ pass_config = click.make_pass_decorator(CLIConfig)
     required=False,
 )
 @click.option(
+    "--tests-dir",
+    type=str,
+    help="path to the tests, will not be mutated",
+    required=False,
+    show_default="tests",
+)
+@click.option(
     "--run-command",
     type=str,
     help="command to run to test a mutation",
@@ -82,10 +89,9 @@ def run(config: CLIConfig) -> None:
     antigen = Antigen(
         config=Config(project_root=config.project_root),
     )
-
     mutations = [
         mutation
-        for path in antigen.find_files(config.include)
+        for path in antigen.find_files(config.include, exclude=config.tests_dir)
         for mutation in antigen.gen_mutations(path)
     ]
 

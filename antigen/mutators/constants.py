@@ -11,7 +11,6 @@ def modify_constants(node: AST, context: Context) -> Iterator[Mutation]:
     if isinstance(node, Bytes):
         yield Mutation.from_node(Bytes(b"XXX%bXXX" % node.s, kind=None), context)
     if isinstance(node, Num):
-        yield Mutation.from_node(Num(node.value + 1, kind=None), context)
-        yield Mutation.from_node(Num(node.value - 1, kind=None), context)
-        yield Mutation.from_node(Num(1, kind=None), context)
-        yield Mutation.from_node(Num(0, kind=None), context)
+        values = {0, 1, node.value - 1, node.value + 1} - {node.value}
+        for val in sorted(values, key=lambda n: (n.real, n.imag)):
+            yield Mutation.from_node(Num(val, kind=None), context)
