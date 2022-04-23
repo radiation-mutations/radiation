@@ -1,16 +1,19 @@
 from dataclasses import fields
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import click
 
 from antigen import Antigen
 from antigen.config import Config
+from antigen.mutation import Mutation
+from antigen.types import SuccessStatus
 from antigen_cli.config import (
     CLIConfig,
     read_config,
     read_default_config,
     validate_path_suffix,
 )
+from antigen_cli.utils import dump_mutation, get_mutation_loc
 
 
 def _override_config(config: CLIConfig, values: Dict[str, Any]) -> CLIConfig:
@@ -80,11 +83,36 @@ def run(config: CLIConfig) -> None:
         config=Config(project_root=config.project_root),
     )
 
-    for path in antigen.find_files(config.include):
-        for index, mutation in enumerate(antigen.gen_mutations(path)):
-            rel_path = mutation.context.file.path.relative_to(config.project_root)
+    mutations = [
+        mutation
+        for path in antigen.find_files(config.include)
+        for mutation in antigen.gen_mutations(path)
+    ]
+
+    click.echo(f"Generated {len(mutations)} mutations")
+
+    survived: List[Mutation] = []
+    timed_out: List[Mutation] = []
+
+    with click.progressbar(
+        mutations,
+        label="Running tests",
+        show_percent=False,
+        item_show_func=lambda mutation: get_mutation_loc(mutation, config=config),
+    ) as progress_bar:
+
+        for mutation in progress_bar:
             result = antigen.test_mutation(mutation, run_command=config.run_command)
-            click.echo(f"{rel_path} #{index}: {result}")
+            if result == SuccessStatus.SURVIVED:
+                survived += [mutation]
+            if result == SuccessStatus.TIMED_OUT:
+                timed_out += [mutation]
+
+    for mutation in survived:
+        dump_mutation(mutation, status="surviving", config=config)
+
+    for mutation in timed_out:
+        dump_mutation(mutation, status="timed out", config=config)
 
 
 if __name__ == "__main__":

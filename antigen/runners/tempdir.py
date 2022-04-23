@@ -25,7 +25,11 @@ class TempDirRunner:
             )
             try:
                 completed_process = subprocess.run(
-                    self.run_command, shell=True, timeout=self.timeout, cwd=tempdir
+                    self.run_command,
+                    shell=True,
+                    capture_output=True,
+                    cwd=tempdir,
+                    timeout=self.timeout,
                 )
             except subprocess.TimeoutExpired:
                 return SuccessStatus.TIMED_OUT
