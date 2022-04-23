@@ -13,7 +13,7 @@ def _invert(node: AST) -> AST:
 def invert(node: AST, context: Context) -> Iterator[Mutation]:
     if isinstance(node, (IfExp, If, While)):
         yield Mutation(
-            IfExp(body=node.body, test=_invert(node.test), orelse=node.orelse),
+            type(node)(body=node.body, test=_invert(node.test), orelse=node.orelse),
             _invert(node.test),
             get_context(node.test, context),
         )

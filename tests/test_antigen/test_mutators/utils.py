@@ -27,3 +27,7 @@ def assert_results_equal(a: List[Mutation], b: List[Mutation]) -> None:
 
 def get_node_from_expr(expr: str) -> AST:
     return parse(expr, mode="eval").body
+
+
+def get_node_from_stmt(expr: str) -> AST:
+    return parse(expr, mode="single").body[0]
