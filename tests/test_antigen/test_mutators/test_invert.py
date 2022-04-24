@@ -9,7 +9,7 @@ from antigen.mutation import Mutation
 from antigen.mutators import invert
 from antigen.types import Context, FileContext, NodeContext
 
-from .utils import assert_results_equal, get_node_from_expr, get_node_from_stmt
+from ..utils import assert_results_equal, get_node_from_expr, get_node_from_stmt
 
 IfOrWhile = Union[If, While]
 

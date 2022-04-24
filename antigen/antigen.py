@@ -88,7 +88,7 @@ class Antigen:
             parent_context=_get_initial_context(path, tree),
             mutators=self.mutators,
         ):
-            if all(filter_fn(mut) for filter_fn in self.filters):
+            if all(filter_fn(mut, self.config) for filter_fn in self.filters):
                 yield mut
 
     def gen_mutations(self, path: Union[str, Path]) -> Iterable[Mutation]:

@@ -1,8 +1,9 @@
 from typing import Callable, List, Sequence
 
+from ..config import Config
 from ..mutation import Mutation
 
-MutantFilter = Callable[[Mutation], bool]
+MutantFilter = Callable[[Mutation, Config], bool]
 
 builtin_filters: List[MutantFilter] = []
 
