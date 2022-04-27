@@ -31,9 +31,7 @@ def _find_files(
 ) -> Iterable[Path]:
     for path in iglob(search, recursive=True):
         if Path(path).is_dir():
-            yield from _find_files(
-                f"{path}/**/*", extension=extension, excludes=excludes
-            )
+            yield from _find_files(f"{path}/*", extension=extension, excludes=excludes)
             continue
         if not path.endswith(extension):
             continue
