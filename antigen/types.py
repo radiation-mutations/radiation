@@ -10,7 +10,7 @@ class SuccessStatus(Enum):
     TIMED_OUT = "timed out"
 
 
-@dataclass
+@dataclass(frozen=True)
 class NodeContext:
     lineno: int
     end_lineno: Optional[int]
@@ -18,12 +18,12 @@ class NodeContext:
     end_col_offset: Optional[int]
 
 
-@dataclass
+@dataclass(frozen=True)
 class FileContext:
     path: Path
 
 
-@dataclass
+@dataclass(frozen=True)
 class Context:
     file: FileContext
     node: NodeContext

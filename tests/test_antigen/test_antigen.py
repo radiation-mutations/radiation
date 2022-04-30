@@ -1,11 +1,17 @@
+import ast
+from ast import AST, BinOp, Expr
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Iterable
+from typing import Iterable, cast
 
 import pytest
 
 from antigen import Antigen
 from antigen.config import Config
+from antigen.mutation import Mutation
+from antigen.types import Context, FileContext, NodeContext
+
+from .utils import assert_results_equal
 
 
 @pytest.fixture()
@@ -112,3 +118,229 @@ def test_find_files_doesnt_allow_absolute_excludes(project_dir: Path) -> None:
                 ".", exclude="/dir/*.py"
             )
         )
+
+
+def test_gen_mutations_str(project_dir: Path) -> None:
+    def mutator(node: AST, context: Context) -> Iterable[Mutation]:
+        yield Mutation.from_node(node, context)
+
+    assert_results_equal(
+        list(
+            Antigen(
+                mutators=[mutator], config=Config(project_root=project_dir)
+            ).gen_mutations_str(
+                "a + 6",
+            )
+        ),
+        [
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).left,
+                context=Context(
+                    file=FileContext(path=project_dir / "<code>"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).right,
+                context=Context(
+                    file=FileContext(path=project_dir / "<code>"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=4, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(Expr, ast.parse("a + 6").body[0]).value,
+                context=Context(
+                    file=FileContext(path=project_dir / "<code>"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6").body[0],
+                context=Context(
+                    file=FileContext(path=project_dir / "<code>"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6"),
+                context=Context(
+                    file=FileContext(path=project_dir / "<code>"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+        ],
+    )
+
+
+def test_gen_mutations_str_abs_path(project_dir: Path) -> None:
+    def mutator(node: AST, context: Context) -> Iterable[Mutation]:
+        yield Mutation.from_node(node, context)
+
+    assert_results_equal(
+        list(
+            Antigen(
+                mutators=[mutator], config=Config(project_root=project_dir)
+            ).gen_mutations_str("a + 6", path=project_dir / "code.py")
+        ),
+        [
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).left,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).right,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=4, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(Expr, ast.parse("a + 6").body[0]).value,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6").body[0],
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6"),
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+        ],
+    )
+
+
+def test_gen_mutations_str_rel_path(project_dir: Path) -> None:
+    def mutator(node: AST, context: Context) -> Iterable[Mutation]:
+        yield Mutation.from_node(node, context)
+
+    assert_results_equal(
+        list(
+            Antigen(
+                mutators=[mutator], config=Config(project_root=project_dir)
+            ).gen_mutations_str("a + 6", path="code.py")
+        ),
+        [
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).left,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(BinOp, cast(Expr, ast.parse("a + 6").body[0]).value).right,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=4, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=cast(Expr, ast.parse("a + 6").body[0]).value,
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6").body[0],
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+            Mutation(
+                tree=ast.parse("a + 6"),
+                node=ast.parse("a + 6"),
+                context=Context(
+                    file=FileContext(path=project_dir / "code.py"),
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=5
+                    ),
+                    extra=None,
+                ),
+            ),
+        ],
+    )
+
+
+def test_gen_mutations_str_empty(project_dir: Path) -> None:
+    def mutator(node: AST, context: Context) -> Iterable[Mutation]:
+        yield Mutation.from_node(node, context)
+
+    assert (
+        list(
+            Antigen(
+                mutators=[mutator], config=Config(project_root=project_dir)
+            ).gen_mutations_str("")
+        )
+        == []
+    )

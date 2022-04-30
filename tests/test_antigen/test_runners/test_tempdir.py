@@ -141,7 +141,7 @@ def test_tempdir_runner_timed_out_mutant(project_path: Path) -> None:
     (project_path / "code.py").write_text("1")
 
     assert (
-        TempDirRunner("sleep 1", timeout=0.1)(
+        TempDirRunner("sleep 0.1", timeout=0.05)(
             Mutation(
                 node=get_node_from_expr("2"),
                 tree=get_node_from_expr("2"),
@@ -155,4 +155,25 @@ def test_tempdir_runner_timed_out_mutant(project_path: Path) -> None:
             Config(project_root=project_path),
         )
         == SuccessStatus.TIMED_OUT
+    )
+
+
+def test_tempdir_runner_not_timed_out_mutant(project_path: Path) -> None:
+    (project_path / "code.py").write_text("1")
+
+    assert (
+        TempDirRunner("sleep 0.05", timeout=0.1)(
+            Mutation(
+                node=get_node_from_expr("2"),
+                tree=get_node_from_expr("2"),
+                context=Context(
+                    node=NodeContext(
+                        lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
+                    ),
+                    file=FileContext(path=project_path / "code.py"),
+                ),
+            ),
+            Config(project_root=project_path),
+        )
+        == SuccessStatus.SURVIVED
     )
