@@ -13,7 +13,7 @@ from ..types import SuccessStatus
 @dataclass
 class TempDirRunner:
     run_command: str
-    timeout: Optional[int] = None
+    timeout: Optional[float] = None
 
     def __call__(self, mutation: Mutation, config: Config) -> SuccessStatus:
         mut_rel_path = mutation.context.file.path.relative_to(config.project_root)
