@@ -1,5 +1,6 @@
+import ast
 import os
-from ast import Module, parse
+from ast import Module
 from dataclasses import dataclass, field
 from glob import iglob
 from pathlib import Path
@@ -76,7 +77,7 @@ class Antigen:
         path = Path(path)
         path = path if path.is_absolute() else self.config.project_root / path
 
-        tree = parse(code)
+        tree = ast.parse(code)
 
         if len(tree.body) == 0:
             return

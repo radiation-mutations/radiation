@@ -1,4 +1,4 @@
-from dataclasses import fields
+from dataclasses import replace
 from typing import Any, Dict, List, Optional
 
 import click
@@ -16,13 +16,9 @@ from antigen_cli.config import (
 from antigen_cli.utils import dump_mutation, get_mutation_loc
 
 
-def _override_config(config: CLIConfig, values: Dict[str, Any]) -> CLIConfig:
-    return CLIConfig(
-        **{
-            field.name: values.get(field.name) or getattr(config, field.name)
-            for field in fields(config)
-        }
-    )
+def _override_config(config: CLIConfig, overrides: Dict[str, Any]) -> CLIConfig:
+    overrides = {key: val for key, val in overrides.items() if val is not None}
+    return replace(config, **overrides)
 
 
 pass_config = click.make_pass_decorator(CLIConfig)
@@ -74,12 +70,12 @@ def cli(
     project_root: Optional[str],
     **config_overrides: Any,
 ) -> None:
-    config = (
+    config_base = (
         read_config(config_file)
         if config_file
         else read_default_config(root_path=project_root)
     )
-    config = _override_config(config, config_overrides)
+    config = _override_config(config_base, config_overrides)
     ctx.obj = config
 
 

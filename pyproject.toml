@@ -36,6 +36,7 @@ autoflake = "^1.4"
 types-whatthepatch = "^1.0.0"
 types-toml = "^0.10.5"
 pytest = "^7.1.1"
+pytest-coverage = "^0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -115,6 +115,23 @@ def patch_no_hunks(filename: str) -> str:
 
 
 @pytest.fixture
+def patch_other_file(filename: str) -> str:
+    return dedent(
+        """
+        diff --git blabla
+        index 1d36346..6a53a30 100644
+        --- a/oldfilename.py
+        +++ b/otherfilename.py
+        @@ -1,1 +1,1 @@
+        -a = 5
+        +a = 5 * 3
+        """.lstrip(
+            "\n"
+        )
+    )
+
+
+@pytest.fixture
 def config(project_path: Path) -> Config:
     return Config(project_root=project_path)
 
@@ -141,6 +158,12 @@ def test_filter_no_body(
     mutation_in_line_1: Mutation, patch_no_hunks: str, config: Config
 ) -> None:
     assert not PatchFilter(patch_no_hunks)(mutation_in_line_1, config)
+
+
+def test_filter_other_filename(
+    mutation_in_line_1: Mutation, patch_other_file: str, config: Config
+) -> None:
+    assert not PatchFilter(patch_other_file)(mutation_in_line_1, config)
 
 
 def test_patch_filter_from_git_diff(
