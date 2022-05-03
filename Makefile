@@ -1,4 +1,5 @@
 AUTOFLAKE_OPTS ?= --remove-all-unused-imports --ignore-init-module-imports
+PYTEST_OPTS ?= --cov radiation --cov radiation_cli --cov-report xml
 
 default: format lint test
 
@@ -17,4 +18,4 @@ format:
 	poetry run autoflake $(AUTOFLAKE_OPTS) -i -r .
 
 test:
-	poetry run pytest
+	poetry run pytest $(PYTEST_OPTS)
