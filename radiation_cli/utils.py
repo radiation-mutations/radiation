@@ -2,8 +2,8 @@ from typing import Optional
 
 import click
 
-from antigen.mutation import Mutation, apply_mutation_on_string
-from antigen_cli.config import CLIConfig
+from radiation.mutation import Mutation, apply_mutation_on_string
+from radiation_cli.config import CLIConfig
 
 
 def get_mutation_loc(mutation: Optional[Mutation], *, config: CLIConfig) -> str:

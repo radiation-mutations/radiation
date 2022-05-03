@@ -29,7 +29,7 @@ There are mitigations for these downsides:
 
 A much more in-depth explanation about the concept can be found in [This blog post by Goran Petrovic](https://testing.googleblog.com/2021/04/mutation-testing.html)
 
-## Why use Antigen?
+## Why use radiation?
 
 ### Extendability
 
@@ -38,35 +38,35 @@ There are a lot of features you might want to customize to mitigate some of the 
 
 For example, ignoring mutations on logging logic (which depends on your logging framework and conventions), or showing the results on various platforms (e.g. github, bitbucket, gitlab).
 
-Antigen puts extendability as a top priority so that adding mutation testing to your project is feasible.
+radiation puts extendability as a top priority so that adding mutation testing to your project is feasible.
 
 How?
 
 #### Mechine friendly
-The core of antigen is a pure python package that can be used by scripts.
+The core of radiation is a pure python package that can be used by scripts.
 
 The actual CLI uses the core package instead of the logic being coupled to it.
 
 #### Pluginable
-Antigen is written as a pipeline, each stage has an interface (e.g. Mutator, MutantFilter, Runner).
+radiation is written as a pipeline, each stage has an interface (e.g. Mutator, MutantFilter, Runner).
 
 Extending the logic is as simple as creating an object or function that matches that (simple) interface.
 
-The Antigen CLI utilises [entry points](https://amir.rachum.com/blog/2017/07/28/python-entry-points/) so that antigen plugins can be added just by installing them with pip.
+The radiation CLI utilises [entry points](https://amir.rachum.com/blog/2017/07/28/python-entry-points/) so that radiation plugins can be added just by installing them with pip.
 
 ## Usage
 
-*Antigen is currently in development, the API might change between versions.*
+*radiation is currently in development, the API might change between versions.*
 
 ```python
-antigen = Antigen(
+radiation = Radiation(
     filters=[PatchFilter.from_git_diff("develop")],
     config=Config(project_root=Path("/home/myuser/myproject/")),
 )
 
-for path in antigen.find_files("."):
-    for mutation in antigen.gen_mutations(path):
-        result = antigen.test_mutation(
+for path in radiation.find_files("."):
+    for mutation in radiation.gen_mutations(path):
+        result = radiation.test_mutation(
             mutation,
             run_command="pytest",
         )
@@ -76,11 +76,11 @@ for path in antigen.find_files("."):
 or use CLI
 
 ```
-Usage: antigen [OPTIONS] COMMAND [ARGS]...
+Usage: radiation [OPTIONS] COMMAND [ARGS]...
 
 Options:
   -c, --config-file PATH   configuration file to use  [default:
-                           (.antigen.cfg)]
+                           (.radiation.cfg)]
   -p, --project-root PATH  path to project to run on  [default: (cwd)]
   -i, --include TEXT       paths from which to take files for mutation, can be
                            globs

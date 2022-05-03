@@ -4,7 +4,7 @@ from typing import List
 
 from astunparse import unparse
 
-from antigen.mutation import Mutation
+from radiation.mutation import Mutation
 
 
 def _normalize(node: AST) -> AST:

@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from antigen.config import Config
-from antigen.filters.line_limit import LineLimitFilter
-from antigen.mutation import Mutation
-from antigen.types import Context, FileContext, NodeContext
+from radiation.config import Config
+from radiation.filters.line_limit import LineLimitFilter
+from radiation.mutation import Mutation
+from radiation.types import Context, FileContext, NodeContext
 
 from ..utils import get_node_from_expr, get_node_from_stmt
 

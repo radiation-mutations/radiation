@@ -5,9 +5,9 @@ from typing import Iterable, cast
 
 import pytest
 
-from antigen.gen import gen_mutations
-from antigen.mutation import Mutation
-from antigen.types import Context, FileContext, NodeContext
+from radiation.gen import gen_mutations
+from radiation.mutation import Mutation
+from radiation.types import Context, FileContext, NodeContext
 
 from .utils import assert_results_equal, get_node_from_expr
 

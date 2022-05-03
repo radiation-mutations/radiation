@@ -1,8 +1,8 @@
 from pathlib import Path
 from textwrap import dedent
 
-from antigen.mutation import Mutation, apply_mutation_on_string
-from antigen.types import Context, FileContext, NodeContext
+from radiation.mutation import Mutation, apply_mutation_on_string
+from radiation.types import Context, FileContext, NodeContext
 
 from .utils import get_node_from_expr, get_node_from_stmt
 

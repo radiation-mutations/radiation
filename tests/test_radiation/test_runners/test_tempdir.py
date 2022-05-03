@@ -6,10 +6,10 @@ from typing import Iterable
 
 import pytest
 
-from antigen.config import Config
-from antigen.mutation import Mutation
-from antigen.runners import TempDirRunner
-from antigen.types import Context, FileContext, NodeContext, SuccessStatus
+from radiation.config import Config
+from radiation.mutation import Mutation
+from radiation.runners import TempDirRunner
+from radiation.types import Context, FileContext, NodeContext, SuccessStatus
 
 from ..utils import get_node_from_expr
 

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from antigen.types import Context, FileContext, NodeContext
+from radiation.types import Context, FileContext, NodeContext
 
 
 @pytest.fixture

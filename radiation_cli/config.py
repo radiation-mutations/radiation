@@ -16,12 +16,12 @@ class CLIConfig:
     tests_dir: str = field(default="tests")
 
 
-DEFAULT_SECTIONS = ("antigen", "settings")
+DEFAULT_SECTIONS = ("radiation", "settings")
 
 DEFAULT_FILES = [
-    (".antigen.cfg", DEFAULT_SECTIONS),
-    (".antigen.toml", DEFAULT_SECTIONS),
-    ("pyproject.toml", ("tool.antigen",)),
+    (".radiation.cfg", DEFAULT_SECTIONS),
+    (".radiation.toml", DEFAULT_SECTIONS),
+    ("pyproject.toml", ("tool.radiation",)),
 ]
 
 

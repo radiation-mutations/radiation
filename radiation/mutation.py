@@ -6,7 +6,7 @@ from pathlib import Path
 
 from astunparse import unparse
 
-from antigen.types import Context
+from radiation.types import Context
 
 
 @dataclass

@@ -5,9 +5,9 @@ from typing import Union, cast
 
 import pytest
 
-from antigen.mutation import Mutation
-from antigen.mutators import invert
-from antigen.types import Context, FileContext, NodeContext
+from radiation.mutation import Mutation
+from radiation.mutators import invert
+from radiation.types import Context, FileContext, NodeContext
 
 from ..utils import assert_results_equal, get_node_from_expr, get_node_from_stmt
 

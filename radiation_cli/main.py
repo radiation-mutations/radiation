@@ -3,17 +3,17 @@ from typing import Any, Dict, List, Optional
 
 import click
 
-from antigen import Antigen
-from antigen.config import Config
-from antigen.mutation import Mutation
-from antigen.types import SuccessStatus
-from antigen_cli.config import (
+from radiation import Radiation
+from radiation.config import Config
+from radiation.mutation import Mutation
+from radiation.types import SuccessStatus
+from radiation_cli.config import (
     CLIConfig,
     read_config,
     read_default_config,
     validate_path_suffix,
 )
-from antigen_cli.utils import dump_mutation, get_mutation_loc
+from radiation_cli.utils import dump_mutation, get_mutation_loc
 
 
 def _override_config(config: CLIConfig, overrides: Dict[str, Any]) -> CLIConfig:
@@ -31,7 +31,7 @@ pass_config = click.make_pass_decorator(CLIConfig)
     type=click.Path(exists=True),
     help="configuration file to use",
     required=False,
-    show_default=".antigen.cfg",
+    show_default=".radiation.cfg",
     callback=lambda ctx, param, value: validate_path_suffix(value),
 )
 @click.option(
@@ -82,13 +82,13 @@ def cli(
 @cli.command(help="run the mutation testing pipeline")
 @pass_config
 def run(config: CLIConfig) -> None:
-    antigen = Antigen(
+    radiation = Radiation(
         config=Config(project_root=config.project_root),
     )
     mutations = [
         mutation
-        for path in antigen.find_files(config.include, exclude=config.tests_dir)
-        for mutation in antigen.gen_mutations(path)
+        for path in radiation.find_files(config.include, exclude=config.tests_dir)
+        for mutation in radiation.gen_mutations(path)
     ]
 
     click.echo(f"Generated {len(mutations)} mutations")
@@ -104,7 +104,7 @@ def run(config: CLIConfig) -> None:
     ) as progress_bar:
 
         for mutation in progress_bar:
-            result = antigen.test_mutation(mutation, run_command=config.run_command)
+            result = radiation.test_mutation(mutation, run_command=config.run_command)
             if result == SuccessStatus.SURVIVED:
                 survived += [mutation]
             if result == SuccessStatus.TIMED_OUT:

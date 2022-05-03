@@ -1,19 +1,19 @@
 [tool.poetry]
-name = "antigen"
+name = "radiation"
 version = "0.2.0"
 description = "Extendable mutation testing framework"
 authors = ["Yanay Goor <yanay.goor@gmail.com>"]
 license = "MIT"
 
 readme = "README.md"
-homepage = "https://github.com/YanayGoor/Antigen"
-repository = "https://github.com/YanayGoor/Antigen"
-documentation = "https://github.com/YanayGoor/Antigen"
+homepage = "https://github.com/radiation-mutations/radiation"
+repository = "https://github.com/radiation-mutations/radiation"
+documentation = "https://github.com/radiation-mutations/radiation"
 
 keywords = ["testing", "mutation"]
 
 [tool.poetry.scripts]
-antigen = 'antigen_cli.main:cli'
+radiation = 'radiation_cli.main:cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"

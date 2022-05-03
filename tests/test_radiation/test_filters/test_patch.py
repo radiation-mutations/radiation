@@ -6,10 +6,10 @@ from typing import Iterable
 
 import pytest
 
-from antigen.config import Config
-from antigen.filters.patch import PatchFilter
-from antigen.mutation import Mutation
-from antigen.types import Context, FileContext, NodeContext
+from radiation.config import Config
+from radiation.filters.patch import PatchFilter
+from radiation.mutation import Mutation
+from radiation.types import Context, FileContext, NodeContext
 
 from ..utils import get_node_from_expr, get_node_from_stmt
 

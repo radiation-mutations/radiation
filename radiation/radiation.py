@@ -46,7 +46,7 @@ def _assert_relative(paths: List[str]) -> None:
 
 
 @dataclass(frozen=True)
-class Antigen:
+class Radiation:
     config: Config
     runner: Optional[Runner] = field(default=None)
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
