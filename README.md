@@ -3,7 +3,7 @@
 </p>
 
 ![python version](https://img.shields.io/pypi/pyversions/radiation)
-[![Build](https://github.com/radiation-mutations/radiation/actions/workflows/lint-and-test.yml/badge.svg)](https://github.com/radiation-mutations/radiation/actions/workflows/lint-and-test.yml)
+[![Build](https://github.com/radiation-mutations/radiation/actions/workflows/build.yml/badge.svg)](https://github.com/radiation-mutations/radiation/actions/workflows/build.yml)
 ![codecov](https://codecov.io/gh/radiation-mutations/radiation/branch/master/graph/badge.svg?token=8S0B0PJX3W)
 
 
