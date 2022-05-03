@@ -41,11 +41,11 @@ def project_dir(tempdir: Path) -> Iterable[Path]:
 
 def test_find_files(project_dir: Path) -> None:
     assert list(Radiation(config=Config(project_root=project_dir)).find_files(".")) == [
-        project_dir / "dir" / "b.py",
         project_dir / "a.py",
         project_dir / "b.py",
-        project_dir / "otherdir" / "nesteddir" / "c.py",
+        project_dir / "dir" / "b.py",
         project_dir / "otherdir" / "b.py",
+        project_dir / "otherdir" / "nesteddir" / "c.py",
     ]
 
 
@@ -64,9 +64,9 @@ def test_find_files_exclude_dir(project_dir: Path) -> None:
             ".", exclude="otherdir"
         )
     ) == [
-        project_dir / "dir" / "b.py",
         project_dir / "a.py",
         project_dir / "b.py",
+        project_dir / "dir" / "b.py",
     ]
 
 
@@ -97,8 +97,8 @@ def test_find_files_include_glob_to_dir(project_dir: Path) -> None:
         Radiation(config=Config(project_root=project_dir)).find_files("*dir")
     ) == [
         project_dir / "dir" / "b.py",
-        project_dir / "otherdir" / "nesteddir" / "c.py",
         project_dir / "otherdir" / "b.py",
+        project_dir / "otherdir" / "nesteddir" / "c.py",
     ]
 
 

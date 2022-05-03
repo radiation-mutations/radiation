@@ -30,7 +30,7 @@ def _get_initial_context(path: Path, module: Module) -> Context:
 def _find_files(
     search: str, extension: str = ".py", excludes: Optional[List[Path]] = None
 ) -> Iterable[Path]:
-    for path in iglob(search, recursive=True):
+    for path in sorted(iglob(search, recursive=True)):
         if Path(path).is_dir():
             yield from _find_files(f"{path}/*", extension=extension, excludes=excludes)
             continue
