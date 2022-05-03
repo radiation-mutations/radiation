@@ -180,7 +180,19 @@ def test_patch_filter_from_git_diff(
     )
     subprocess.run(["git", "init"], check=True, cwd=tempdir)
     subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
-    subprocess.run(["git", "commit", '-m"First commit"'], check=True, cwd=tempdir)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            'user.email="your@email.com"',
+            "-c",
+            'user.name="Your Name"',
+            "commit",
+            '-m"First commit"',
+        ],
+        check=True,
+        cwd=tempdir,
+    )
 
     file_path.write_text(
         dedent(
@@ -211,7 +223,19 @@ def test_patch_filter_from_git_diff_with_base(
     )
     subprocess.run(["git", "init"], check=True, cwd=tempdir)
     subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
-    subprocess.run(["git", "commit", '-m"First commit"'], check=True, cwd=tempdir)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            'user.email="your@email.com"',
+            "-c",
+            'user.name="Your Name"',
+            "commit",
+            '-m"First commit"',
+        ],
+        check=True,
+        cwd=tempdir,
+    )
 
     file_path.write_text(
         dedent(
@@ -223,7 +247,19 @@ def test_patch_filter_from_git_diff_with_base(
     )
 
     subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
-    subprocess.run(["git", "commit", '-m"Second commit"'], check=True, cwd=tempdir)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            'user.email="your@email.com"',
+            "-c",
+            'user.name="Your Name"',
+            "commit",
+            '-m"Second commit"',
+        ],
+        check=True,
+        cwd=tempdir,
+    )
 
     pf = PatchFilter.from_git_diff("HEAD~", base="HEAD", project_dir=tempdir)
 
