@@ -2,6 +2,10 @@
   <img src="https://user-images.githubusercontent.com/49815029/166558654-7de207d0-f520-49f4-ace8-60769b3d9c12.png" height="200">
 </p>
 
+![codecov](https://codecov.io/gh/radiation-mutations/radiation/branch/master/graph/badge.svg?token=8S0B0PJX3W)
+![python version](https://img.shields.io/pypi/pyversions/radiation)
+
+
 
 Extendable mutation testing framework
 
