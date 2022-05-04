@@ -10,8 +10,8 @@ import toml
 
 @dataclass(frozen=True)
 class CLIConfig:
+    project_root: Path
     include: List[str] = field(default_factory=lambda: ["."])
-    project_root: Path = field(default_factory=lambda: Path(os.getcwd()))
     run_command: str = field(default="pytest")
     tests_dir: str = field(default="tests")
 
@@ -47,6 +47,7 @@ def _read_toml(
                 include=_toml_parse_list(config["include"]),
                 run_command=config["run_command"],
                 tests_dir=config["tests_dir"],
+                project_root=Path(path).parent,
             )
     return None
 
@@ -66,6 +67,7 @@ def _read_cfg(
                 include=_cfg_parse_list(parser.get(section, "include")),
                 run_command=parser.get(section, "run_command"),
                 tests_dir=parser.get(section, "tests_dir"),
+                project_root=Path(path).parent,
             )
     return None
 
@@ -105,4 +107,4 @@ def read_default_config(root_path: Optional[Union[str, Path]] = None) -> CLIConf
         if config := PARSERS[path.suffix](path, sections):
             return config
 
-    return CLIConfig()
+    return CLIConfig(project_root=root_path)
