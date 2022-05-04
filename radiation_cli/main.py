@@ -1,3 +1,4 @@
+from collections import defaultdict
 from dataclasses import replace
 from typing import Any, Dict, List, Optional
 
@@ -93,8 +94,7 @@ def run(config: CLIConfig) -> None:
 
     click.echo(f"Generated {len(mutations)} mutations")
 
-    survived: List[Mutation] = []
-    timed_out: List[Mutation] = []
+    results: Dict[SuccessStatus, List[Mutation]] = defaultdict(list)
 
     with click.progressbar(
         mutations,
@@ -105,15 +105,12 @@ def run(config: CLIConfig) -> None:
 
         for mutation in progress_bar:
             result = radiation.test_mutation(mutation, run_command=config.run_command)
-            if result == SuccessStatus.SURVIVED:
-                survived += [mutation]
-            if result == SuccessStatus.TIMED_OUT:
-                timed_out += [mutation]
+            results[result].append(mutation)
 
-    for mutation in survived:
+    for mutation in results[SuccessStatus.SURVIVED]:
         dump_mutation(mutation, status="surviving", config=config)
 
-    for mutation in timed_out:
+    for mutation in results[SuccessStatus.TIMED_OUT]:
         dump_mutation(mutation, status="timed out", config=config)
 
 

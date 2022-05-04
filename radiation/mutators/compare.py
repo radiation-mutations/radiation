@@ -26,9 +26,11 @@ def _get_replacement_ops(op: cmpop) -> Iterable[cmpop]:
 
 
 def switch_compare_ops(node: AST, context: Context) -> Iterator[Mutation]:
-    if isinstance(node, Compare):
-        for index, op in enumerate(node.ops):
-            for new_op in _get_replacement_ops(op):
-                new_node = deepcopy(node)
-                new_node.ops[index] = new_op
-                yield Mutation.from_node(new_node, context)
+    if not isinstance(node, Compare):
+        return
+
+    for index, op in enumerate(node.ops):
+        for new_op in _get_replacement_ops(op):
+            new_node = deepcopy(node)
+            new_node.ops[index] = new_op
+            yield Mutation.from_node(new_node, context)

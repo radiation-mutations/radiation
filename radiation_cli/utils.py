@@ -1,9 +1,16 @@
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 import click
 
 from radiation.mutation import Mutation, apply_mutation_on_string
 from radiation_cli.config import CLIConfig
+
+
+def is_relative_to(path: Union[str, Path], parent: Union[str, Path]) -> bool:
+    assert Path(path).is_absolute()
+    assert Path(parent).is_absolute()
+    return Path(parent) in Path(path).parents
 
 
 def get_mutation_loc(mutation: Optional[Mutation], *, config: CLIConfig) -> str:

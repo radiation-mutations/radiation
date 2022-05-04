@@ -6,6 +6,8 @@ from glob import iglob
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Union
 
+from radiation_cli.utils import is_relative_to
+
 from .config import Config
 from .filters import MutantFilter, get_default_filters
 from .gen import gen_mutations
@@ -28,15 +30,17 @@ def _get_initial_context(path: Path, module: Module) -> Context:
 
 
 def _find_files(
-    search: str, extension: str = ".py", excludes: Optional[List[Path]] = None
+    search: str, *, extension: str = ".py", excludes: Optional[List[Path]] = None
 ) -> Iterable[Path]:
+    excludes = excludes or []
+
     for path in sorted(iglob(search, recursive=True)):
+        if any(is_relative_to(path, exclude) for exclude in excludes):
+            continue
         if Path(path).is_dir():
             yield from _find_files(f"{path}/*", extension=extension, excludes=excludes)
             continue
         if not path.endswith(extension):
-            continue
-        if excludes and any(exclude in Path(path).parents for exclude in excludes):
             continue
         yield Path(path)
 

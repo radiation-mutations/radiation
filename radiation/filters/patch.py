@@ -3,12 +3,24 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from whatthepatch import parse_patch
+from whatthepatch.patch import Change
 
 from ..config import Config
 from ..mutation import Mutation
+
+
+def is_mutation_in_diff(mutation: Mutation, file_changes: List[Change]) -> bool:
+    lineno = mutation.context.node.lineno
+    end_lineno = mutation.context.node.end_lineno or lineno
+
+    return any(
+        lineno <= change.new <= end_lineno
+        for change in file_changes
+        if change.new is not None and change.old is None
+    )
 
 
 @dataclass
@@ -16,20 +28,15 @@ class PatchFilter:
     patch: str
 
     def __call__(self, mutation: Mutation, config: Config) -> bool:
-        rel_path = mutation.context.file.path.relative_to(config.project_root)
-        lineno = mutation.context.node.lineno
-        end_lineno = mutation.context.node.end_lineno or lineno
+        mutation_path = str(mutation.context.file.path.relative_to(config.project_root))
 
         for diff in parse_patch(self.patch):
             if diff.header is None or diff.changes is None:
                 continue
-            if diff.header.new_path != str(rel_path):
+            if diff.header.new_path != mutation_path:
                 continue
-            return any(
-                lineno <= change.new <= end_lineno
-                for change in diff.changes
-                if change.new is not None and change.old is None
-            )
+            return is_mutation_in_diff(mutation, diff.changes)
+
         return False
 
     @classmethod
