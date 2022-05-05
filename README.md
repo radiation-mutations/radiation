@@ -5,7 +5,7 @@
 [![Stable Version](https://img.shields.io/pypi/v/radiation?label=stable)](https://pypi.org/project/radiation/)
 ![python version](https://img.shields.io/pypi/pyversions/radiation)
 [![Build](https://github.com/radiation-mutations/radiation/actions/workflows/build.yml/badge.svg)](https://github.com/radiation-mutations/radiation/actions/workflows/build.yml)
-![codecov](https://codecov.io/gh/radiation-mutations/radiation/branch/master/graph/badge.svg?token=8S0B0PJX3W)
+[![codecov](https://codecov.io/gh/radiation-mutations/radiation/branch/master/graph/badge.svg?token=8S0B0PJX3W)](https://codecov.io/gh/radiation-mutations/radiation)
 [![maintainability](https://api.codeclimate.com/v1/badges/501fb29d1929ce13b4aa/maintainability)](https://codeclimate.com/github/radiation-mutations/radiation/maintainability)
 
 Extendable mutation testing framework
