@@ -34,7 +34,7 @@ jobs:
     - name: commit
       uses: EndBug/add-and-commit@v9
       with:
-        message: Auto formatted by ${{ github.workflow }} workflow
+        message: "[automatic] Format code"
     - name: Lint
       run: |
         make lint
