@@ -6,7 +6,7 @@ from typing import Iterable
 import click
 import pytest
 
-from radiation_cli.config import CLIConfig, read_default_config, read_config
+from radiation_cli.config import CLIConfig, read_config, read_default_config
 
 
 def _dedent(text: str) -> str:
