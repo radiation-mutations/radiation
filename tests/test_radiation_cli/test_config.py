@@ -18,7 +18,7 @@ def project_dir() -> Iterable[Path]:
         yield Path(tempdir)
 
 
-def test_read_default_config(project_dir: Path) -> None:
+def test_read_default_config_cfg(project_dir: Path) -> None:
     (project_dir / ".radiation.cfg").write_text(
         _dedent(
             """
@@ -26,6 +26,52 @@ def test_read_default_config(project_dir: Path) -> None:
             include = .
             tests_dir = tests
             run_command = poetry install && poetry run pytest
+            """
+        )
+    )
+
+    assert read_default_config(project_dir) == CLIConfig(
+        include=["."],
+        project_root=project_dir,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+    )
+
+
+def test_read_default_config_toml(project_dir: Path) -> None:
+    (project_dir / ".radiation.toml").write_text(
+        _dedent(
+            """
+            [settings]
+            include = "."
+            tests_dir = "tests"
+            run_command = "poetry install && poetry run pytest"
+            """
+        )
+    )
+
+    assert read_default_config(project_dir) == CLIConfig(
+        include=["."],
+        project_root=project_dir,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+    )
+
+
+def test_read_default_config_pyproject_toml(project_dir: Path) -> None:
+    (project_dir / "pyproject.toml").write_text(
+        _dedent(
+            """
+            [otherkey]
+            include = ".."
+
+            [tool.othertool]
+            include = ".."
+
+            [tool.radiation]
+            include = "."
+            tests_dir = "tests"
+            run_command = "poetry install && poetry run pytest"
             """
         )
     )
