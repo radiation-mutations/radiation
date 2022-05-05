@@ -1,5 +1,6 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/49815029/166558654-7de207d0-f520-49f4-ace8-60769b3d9c12.png" width="580" height="auto">
+  <img src="https://user-images.githubusercontent.com/49815029/166558654-7de207d0-f520-49f4-ace8-60769b3d9c12.png#gh-dark-mode-only" width="580" height="auto">
+  <img src="https://user-images.githubusercontent.com/49815029/167021855-cfbed66b-fbcc-4887-aa90-33ea0f647a3c.png#gh-light-mode-only" width="580" height="auto">
 </p>
 
 [![Stable Version](https://img.shields.io/pypi/v/radiation?label=stable)](https://pypi.org/project/radiation/)
