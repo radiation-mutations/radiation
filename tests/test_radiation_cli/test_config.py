@@ -101,6 +101,15 @@ def test_read_default_config_toml_multiple_includes(project_dir: Path) -> None:
     )
 
 
+def test_read_default_config_no_file_present(project_dir: Path) -> None:
+    assert read_default_config(project_dir) == CLIConfig(
+        include=["."],
+        project_root=project_dir,
+        run_command="pytest",
+        tests_dir="tests",
+    )
+
+
 def test_read_default_config_pyproject_toml(project_dir: Path) -> None:
     (project_dir / "pyproject.toml").write_text(
         _dedent(
@@ -162,7 +171,7 @@ def test_read_config_unknown_file_type(project_dir: Path) -> None:
         read_config(project_dir / "custom_name.bla")
 
 
-def test_read_config_no_recognized_sections(project_dir: Path) -> None:
+def test_read_config_no_recognized_sections_toml(project_dir: Path) -> None:
     (project_dir / "custom_name.toml").write_text(
         _dedent(
             """
@@ -175,3 +184,18 @@ def test_read_config_no_recognized_sections(project_dir: Path) -> None:
     )
     with pytest.raises(Exception, match="Cannot find expected sections in config file"):
         read_config(project_dir / "custom_name.toml")
+
+
+def test_read_config_no_recognized_sections_cfg(project_dir: Path) -> None:
+    (project_dir / "custom_name.cfg").write_text(
+        _dedent(
+            """
+            [mysection]
+            include = .
+            tests_dir = tests
+            run_command = poetry install && poetry run pytest
+            """
+        )
+    )
+    with pytest.raises(Exception, match="Cannot find expected sections in config file"):
+        read_config(project_dir / "custom_name.cfg")
