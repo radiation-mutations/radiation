@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from textwrap import dedent
@@ -167,7 +168,10 @@ def test_read_config_unknown_file_type(project_dir: Path) -> None:
             """
         )
     )
-    with pytest.raises(click.BadParameter):
+    with pytest.raises(
+        click.BadParameter,
+        match=re.escape("Unrecognized config file format (supported: .toml, .cfg)"),
+    ):
         read_config(project_dir / "custom_name.bla")
 
 
@@ -182,7 +186,13 @@ def test_read_config_no_recognized_sections_toml(project_dir: Path) -> None:
             """
         )
     )
-    with pytest.raises(Exception, match="Cannot find expected sections in config file"):
+    with pytest.raises(
+        Exception,
+        match=re.escape(
+            "Cannot find expected sections in config file "
+            "(expected: [radiation] or [settings])"
+        ),
+    ):
         read_config(project_dir / "custom_name.toml")
 
 
@@ -197,5 +207,11 @@ def test_read_config_no_recognized_sections_cfg(project_dir: Path) -> None:
             """
         )
     )
-    with pytest.raises(Exception, match="Cannot find expected sections in config file"):
+    with pytest.raises(
+        Exception,
+        match=re.escape(
+            "Cannot find expected sections in config file "
+            "(expected: [radiation] or [settings])"
+        ),
+    ):
         read_config(project_dir / "custom_name.cfg")
