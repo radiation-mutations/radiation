@@ -1,7 +1,5 @@
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from textwrap import dedent
-from typing import Iterable
 
 import pytest
 from click.testing import CliRunner
@@ -14,14 +12,8 @@ def _dedent(text: str) -> str:
 
 
 @pytest.fixture
-def tempdir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
-
-
-@pytest.fixture
-def project_path(tempdir: Path) -> Path:
-    (tempdir / "code.py").write_text(
+def project_path(tmp_path: Path) -> Path:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             from typing import List
@@ -35,7 +27,7 @@ def project_path(tempdir: Path) -> Path:
         )
     )
 
-    (tempdir / "test_code.py").write_text(
+    (tmp_path / "test_code.py").write_text(
         _dedent(
             """
             from code import grep
@@ -54,7 +46,7 @@ def project_path(tempdir: Path) -> Path:
         )
     )
 
-    (tempdir / ".radiation.cfg").write_text(
+    (tmp_path / ".radiation.cfg").write_text(
         _dedent(
             """
             [settings]
@@ -65,14 +57,12 @@ def project_path(tempdir: Path) -> Path:
         )
     )
 
-    return tempdir
+    return tmp_path
 
 
 def test_cli_run(project_path: Path) -> None:
     cli_runner = CliRunner(mix_stderr=False)
-    result = cli_runner.invoke(
-        cli, ["-p", str(project_path), "run"]
-    )
+    result = cli_runner.invoke(cli, ["-p", str(project_path), "run"])
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 9 mutations

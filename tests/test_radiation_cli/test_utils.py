@@ -1,9 +1,7 @@
 import ast
 from ast import AST
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from textwrap import dedent
-from typing import Iterable
 
 import pytest
 from click.testing import CliRunner
@@ -23,18 +21,12 @@ def _dedent(text: str) -> str:
 
 
 @pytest.fixture
-def project_dir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
-
-
-@pytest.fixture
 def cli_runner() -> CliRunner:
     return CliRunner()
 
 
-def test_dump_mutation(project_dir: Path, cli_runner: CliRunner) -> None:
-    (project_dir / "code.py").write_text(
+def test_dump_mutation(tmp_path: Path, cli_runner: CliRunner) -> None:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             a = '5'
@@ -69,11 +61,11 @@ def test_dump_mutation(project_dir: Path, cli_runner: CliRunner) -> None:
                     node=NodeContext(
                         lineno=5, end_lineno=5, col_offset=7, end_col_offset=13
                     ),
-                    file=FileContext(path=project_dir / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
             status="my status",
-            config=CLIConfig(project_root=project_dir),
+            config=CLIConfig(project_root=tmp_path),
             context_lines=3,
         )
 
@@ -91,9 +83,9 @@ def test_dump_mutation(project_dir: Path, cli_runner: CliRunner) -> None:
 
 
 def test_dump_mutation_default_context_lines(
-    project_dir: Path, cli_runner: CliRunner
+    tmp_path: Path, cli_runner: CliRunner
 ) -> None:
-    (project_dir / "code.py").write_text(
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             a = '5'
@@ -128,11 +120,11 @@ def test_dump_mutation_default_context_lines(
                     node=NodeContext(
                         lineno=5, end_lineno=5, col_offset=7, end_col_offset=13
                     ),
-                    file=FileContext(path=project_dir / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
             status="my status",
-            config=CLIConfig(project_root=project_dir),
+            config=CLIConfig(project_root=tmp_path),
         )
 
     stdout.seek(0)
@@ -147,8 +139,8 @@ def test_dump_mutation_default_context_lines(
     )
 
 
-def test_dump_mutation_start_of_file(project_dir: Path, cli_runner: CliRunner) -> None:
-    (project_dir / "code.py").write_text(
+def test_dump_mutation_start_of_file(tmp_path: Path, cli_runner: CliRunner) -> None:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             def fib(n: int) -> int:
@@ -177,11 +169,11 @@ def test_dump_mutation_start_of_file(project_dir: Path, cli_runner: CliRunner) -
                     node=NodeContext(
                         lineno=2, end_lineno=2, col_offset=7, end_col_offset=13
                     ),
-                    file=FileContext(path=project_dir / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
             status="my status",
-            config=CLIConfig(project_root=project_dir),
+            config=CLIConfig(project_root=tmp_path),
             context_lines=3,
         )
 
@@ -196,8 +188,8 @@ def test_dump_mutation_start_of_file(project_dir: Path, cli_runner: CliRunner) -
     )
 
 
-def test_dump_mutation_end_of_file(project_dir: Path, cli_runner: CliRunner) -> None:
-    (project_dir / "code.py").write_text(
+def test_dump_mutation_end_of_file(tmp_path: Path, cli_runner: CliRunner) -> None:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             def fib(n: int) -> int:
@@ -226,11 +218,11 @@ def test_dump_mutation_end_of_file(project_dir: Path, cli_runner: CliRunner) -> 
                     node=NodeContext(
                         lineno=4, end_lineno=4, col_offset=28, end_col_offset=33
                     ),
-                    file=FileContext(path=project_dir / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
             status="my status",
-            config=CLIConfig(project_root=project_dir),
+            config=CLIConfig(project_root=tmp_path),
             context_lines=3,
         )
 
