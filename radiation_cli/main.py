@@ -7,6 +7,7 @@ import click
 from radiation import Radiation
 from radiation.config import Config
 from radiation.mutation import Mutation
+from radiation.runners import TempDirRunner
 from radiation.types import SuccessStatus
 from radiation_cli.config import (
     CLIConfig,
@@ -58,6 +59,12 @@ pass_config = click.make_pass_decorator(CLIConfig)
     show_default="tests",
 )
 @click.option(
+    "--tests-timeout",
+    type=float,
+    help="maximum time for each test suite to run i seconds",
+    required=False,
+)
+@click.option(
     "--run-command",
     type=str,
     help="command to run to test a mutation",
@@ -84,6 +91,7 @@ def cli(
 @pass_config
 def run(config: CLIConfig) -> None:
     radiation = Radiation(
+        runner=TempDirRunner(config.run_command, timeout=config.tests_timeout),
         config=Config(project_root=config.project_root),
     )
     mutations = [

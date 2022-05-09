@@ -1,7 +1,6 @@
+import re
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from textwrap import dedent
-from typing import Iterable
 
 import click
 import pytest
@@ -13,14 +12,30 @@ def _dedent(text: str) -> str:
     return dedent(text.lstrip("\n")).rstrip("\n")
 
 
-@pytest.fixture()
-def project_dir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
+def test_read_default_config_cfg(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.cfg").write_text(
+        _dedent(
+            """
+            [settings]
+            include = .
+            tests_dir = tests
+            run_command = poetry install && poetry run pytest
+            tests_timeout = 2.5
+            """
+        )
+    )
+
+    assert read_default_config(tmp_path) == CLIConfig(
+        include=["."],
+        project_root=tmp_path,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=2.5,
+    )
 
 
-def test_read_default_config_cfg(project_dir: Path) -> None:
-    (project_dir / ".radiation.cfg").write_text(
+def test_read_default_config_cfg_no_timeout(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.cfg").write_text(
         _dedent(
             """
             [settings]
@@ -31,16 +46,17 @@ def test_read_default_config_cfg(project_dir: Path) -> None:
         )
     )
 
-    assert read_default_config(project_dir) == CLIConfig(
+    assert read_default_config(tmp_path) == CLIConfig(
         include=["."],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
+        tests_timeout=None,
     )
 
 
-def test_read_default_config_cfg_multiple_includes(project_dir: Path) -> None:
-    (project_dir / ".radiation.cfg").write_text(
+def test_read_default_config_cfg_multiple_includes(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.cfg").write_text(
         _dedent(
             """
             [settings]
@@ -53,16 +69,38 @@ def test_read_default_config_cfg_multiple_includes(project_dir: Path) -> None:
         )
     )
 
-    assert read_default_config(project_dir) == CLIConfig(
+    assert read_default_config(tmp_path) == CLIConfig(
         include=["*.py", "mydir/"],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
     )
 
 
-def test_read_default_config_toml(project_dir: Path) -> None:
-    (project_dir / ".radiation.toml").write_text(
+def test_read_default_config_toml(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.toml").write_text(
+        _dedent(
+            """
+            [settings]
+            include = "."
+            tests_dir = "tests"
+            run_command = "poetry install && poetry run pytest"
+            tests_timeout = 2.5
+            """
+        )
+    )
+
+    assert read_default_config(tmp_path) == CLIConfig(
+        include=["."],
+        project_root=tmp_path,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=2.5,
+    )
+
+
+def test_read_default_config_toml_no_timeout(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.toml").write_text(
         _dedent(
             """
             [settings]
@@ -73,16 +111,17 @@ def test_read_default_config_toml(project_dir: Path) -> None:
         )
     )
 
-    assert read_default_config(project_dir) == CLIConfig(
+    assert read_default_config(tmp_path) == CLIConfig(
         include=["."],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
+        tests_timeout=None,
     )
 
 
-def test_read_default_config_toml_multiple_includes(project_dir: Path) -> None:
-    (project_dir / ".radiation.toml").write_text(
+def test_read_default_config_toml_multiple_includes(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.toml").write_text(
         _dedent(
             """
             [settings]
@@ -93,16 +132,25 @@ def test_read_default_config_toml_multiple_includes(project_dir: Path) -> None:
         )
     )
 
-    assert read_default_config(project_dir) == CLIConfig(
+    assert read_default_config(tmp_path) == CLIConfig(
         include=["*.py", "mydir/"],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
     )
 
 
-def test_read_default_config_pyproject_toml(project_dir: Path) -> None:
-    (project_dir / "pyproject.toml").write_text(
+def test_read_default_config_no_file_present(tmp_path: Path) -> None:
+    assert read_default_config(tmp_path) == CLIConfig(
+        include=["."],
+        project_root=tmp_path,
+        run_command="pytest",
+        tests_dir="tests",
+    )
+
+
+def test_read_default_config_pyproject_toml(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
         _dedent(
             """
             [otherkey]
@@ -119,16 +167,16 @@ def test_read_default_config_pyproject_toml(project_dir: Path) -> None:
         )
     )
 
-    assert read_default_config(project_dir) == CLIConfig(
+    assert read_default_config(tmp_path) == CLIConfig(
         include=["."],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
     )
 
 
-def test_read_config(project_dir: Path) -> None:
-    (project_dir / "custom_name.cfg").write_text(
+def test_read_config(tmp_path: Path) -> None:
+    (tmp_path / "custom_name.cfg").write_text(
         _dedent(
             """
             [radiation]
@@ -139,16 +187,16 @@ def test_read_config(project_dir: Path) -> None:
         )
     )
 
-    assert read_config(project_dir / "custom_name.cfg") == CLIConfig(
+    assert read_config(tmp_path / "custom_name.cfg") == CLIConfig(
         include=["."],
-        project_root=project_dir,
+        project_root=tmp_path,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
     )
 
 
-def test_read_config_unknown_file_type(project_dir: Path) -> None:
-    (project_dir / "custom_name.bla").write_text(
+def test_read_config_unknown_file_type(tmp_path: Path) -> None:
+    (tmp_path / "custom_name.bla").write_text(
         _dedent(
             """
             [radiation]
@@ -158,12 +206,15 @@ def test_read_config_unknown_file_type(project_dir: Path) -> None:
             """
         )
     )
-    with pytest.raises(click.BadParameter):
-        read_config(project_dir / "custom_name.bla")
+    with pytest.raises(
+        click.BadParameter,
+        match=re.escape("Unrecognized config file format (supported: .toml, .cfg)"),
+    ):
+        read_config(tmp_path / "custom_name.bla")
 
 
-def test_read_config_no_recognized_sections(project_dir: Path) -> None:
-    (project_dir / "custom_name.toml").write_text(
+def test_read_config_no_recognized_sections_toml(tmp_path: Path) -> None:
+    (tmp_path / "custom_name.toml").write_text(
         _dedent(
             """
             [mysection]
@@ -173,5 +224,32 @@ def test_read_config_no_recognized_sections(project_dir: Path) -> None:
             """
         )
     )
-    with pytest.raises(Exception, match="Cannot find expected sections in config file"):
-        read_config(project_dir / "custom_name.toml")
+    with pytest.raises(
+        Exception,
+        match=re.escape(
+            "Cannot find expected sections in config file "
+            "(expected: [radiation] or [settings])"
+        ),
+    ):
+        read_config(tmp_path / "custom_name.toml")
+
+
+def test_read_config_no_recognized_sections_cfg(tmp_path: Path) -> None:
+    (tmp_path / "custom_name.cfg").write_text(
+        _dedent(
+            """
+            [mysection]
+            include = .
+            tests_dir = tests
+            run_command = poetry install && poetry run pytest
+            """
+        )
+    )
+    with pytest.raises(
+        Exception,
+        match=re.escape(
+            "Cannot find expected sections in config file "
+            "(expected: [radiation] or [settings])"
+        ),
+    ):
+        read_config(tmp_path / "custom_name.cfg")

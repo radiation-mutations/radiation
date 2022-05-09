@@ -1,7 +1,6 @@
 import ast
 from ast import AST, BinOp, Expr
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import Iterable, cast
 
 import pytest
@@ -15,28 +14,22 @@ from .utils import assert_results_equal
 
 
 @pytest.fixture()
-def tempdir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
+def project_dir(tmp_path: Path) -> Iterable[Path]:
+    (tmp_path / "a.py").touch()
+    (tmp_path / "b.py").touch()
 
+    (tmp_path / "dir").mkdir()
+    (tmp_path / "dir" / "b.py").touch()
+    (tmp_path / "dir" / "b.java").touch()
 
-@pytest.fixture()
-def project_dir(tempdir: Path) -> Iterable[Path]:
-    (tempdir / "a.py").touch()
-    (tempdir / "b.py").touch()
+    (tmp_path / "otherdir").mkdir()
+    (tmp_path / "otherdir" / "b.py").touch()
 
-    (tempdir / "dir").mkdir()
-    (tempdir / "dir" / "b.py").touch()
-    (tempdir / "dir" / "b.java").touch()
+    (tmp_path / "otherdir" / "nesteddir").mkdir(parents=True)
+    (tmp_path / "otherdir" / "nesteddir" / "c.py").touch()
+    (tmp_path / "otherdir" / "nesteddir" / "c.go").touch()
 
-    (tempdir / "otherdir").mkdir()
-    (tempdir / "otherdir" / "b.py").touch()
-
-    (tempdir / "otherdir" / "nesteddir").mkdir(parents=True)
-    (tempdir / "otherdir" / "nesteddir" / "c.py").touch()
-    (tempdir / "otherdir" / "nesteddir" / "c.go").touch()
-
-    yield tempdir
+    yield tmp_path
 
 
 def test_find_files(project_dir: Path) -> None:

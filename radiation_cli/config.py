@@ -12,8 +12,9 @@ import toml
 class CLIConfig:
     project_root: Path
     include: List[str] = field(default_factory=lambda: ["."])
-    run_command: str = field(default="pytest")
-    tests_dir: str = field(default="tests")
+    run_command: str = "pytest"
+    tests_dir: str = "tests"
+    tests_timeout: Optional[float] = None
 
 
 DEFAULT_SECTIONS = ("radiation", "settings")
@@ -48,6 +49,7 @@ def _read_toml(
                 run_command=config["run_command"],
                 tests_dir=config["tests_dir"],
                 project_root=Path(path).parent,
+                tests_timeout=config.get("tests_timeout"),
             )
     return None
 
@@ -68,6 +70,7 @@ def _read_cfg(
                 run_command=parser.get(section, "run_command"),
                 tests_dir=parser.get(section, "tests_dir"),
                 project_root=Path(path).parent,
+                tests_timeout=parser.getfloat(section, "tests_timeout", fallback=None),
             )
     return None
 

@@ -1,8 +1,6 @@
 import subprocess
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from textwrap import dedent
-from typing import Iterable
 
 import pytest
 
@@ -15,52 +13,41 @@ from ..utils import get_node_from_expr, get_node_from_stmt
 
 
 @pytest.fixture
-def tempdir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
-
-
-@pytest.fixture
-def project_path(tempdir: Path) -> Path:
-    return tempdir
-
-
-@pytest.fixture
 def filename() -> str:
     return "myfile.py"
 
 
 @pytest.fixture
-def mutation_in_line_1(project_path: Path, filename: str) -> Mutation:
+def mutation_in_line_1(tmp_path: Path, filename: str) -> Mutation:
     return Mutation(
         tree=get_node_from_stmt("a = 5 * 3"),
         node=get_node_from_expr("5 * 3"),
         context=Context(
-            file=FileContext(path=project_path / filename),
+            file=FileContext(path=tmp_path / filename),
             node=NodeContext(lineno=1, end_lineno=1, col_offset=4, end_col_offset=9),
         ),
     )
 
 
 @pytest.fixture
-def mutation_in_line_2(project_path: Path, filename: str) -> Mutation:
+def mutation_in_line_2(tmp_path: Path, filename: str) -> Mutation:
     return Mutation(
         tree=get_node_from_stmt("a = 5 * 3"),
         node=get_node_from_expr("5 * 3"),
         context=Context(
-            file=FileContext(path=project_path / filename),
+            file=FileContext(path=tmp_path / filename),
             node=NodeContext(lineno=2, end_lineno=2, col_offset=4, end_col_offset=9),
         ),
     )
 
 
 @pytest.fixture
-def mutation_in_lines_1_to_2(project_path: Path, filename: str) -> Mutation:
+def mutation_in_lines_1_to_2(tmp_path: Path, filename: str) -> Mutation:
     return Mutation(
         tree=get_node_from_stmt("a = (5 * \n3)"),
         node=get_node_from_expr("5 * 3"),
         context=Context(
-            file=FileContext(path=project_path / filename),
+            file=FileContext(path=tmp_path / filename),
             node=NodeContext(lineno=1, end_lineno=2, col_offset=4, end_col_offset=9),
         ),
     )
@@ -132,8 +119,8 @@ def patch_other_file(filename: str) -> str:
 
 
 @pytest.fixture
-def config(project_path: Path) -> Config:
-    return Config(project_root=project_path)
+def config(tmp_path: Path) -> Config:
+    return Config(project_root=tmp_path)
 
 
 def test_patch_filter_mutation_in_patch(
@@ -167,9 +154,9 @@ def test_filter_other_filename(
 
 
 def test_patch_filter_from_git_diff(
-    mutation_in_line_1: Mutation, mutation_in_line_2: Mutation, tempdir: Path
+    mutation_in_line_1: Mutation, mutation_in_line_2: Mutation, tmp_path: Path
 ) -> None:
-    file_path = Path(tempdir) / "myfile.py"
+    file_path = Path(tmp_path) / "myfile.py"
     file_path.write_text(
         dedent(
             """
@@ -178,8 +165,8 @@ def test_patch_filter_from_git_diff(
             """.lstrip()
         )
     )
-    subprocess.run(["git", "init"], check=True, cwd=tempdir)
-    subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
+    subprocess.run(["git", "init"], check=True, cwd=tmp_path)
+    subprocess.run(["git", "add", "-A"], check=True, cwd=tmp_path)
     subprocess.run(
         [
             "git",
@@ -191,7 +178,7 @@ def test_patch_filter_from_git_diff(
             '-m"First commit"',
         ],
         check=True,
-        cwd=tempdir,
+        cwd=tmp_path,
     )
 
     file_path.write_text(
@@ -203,16 +190,16 @@ def test_patch_filter_from_git_diff(
         )
     )
 
-    pf = PatchFilter.from_git_diff("HEAD", project_dir=tempdir)
+    pf = PatchFilter.from_git_diff("HEAD", project_dir=tmp_path)
 
-    assert pf(mutation_in_line_2, Config(project_root=Path(tempdir)))
-    assert not pf(mutation_in_line_1, Config(project_root=Path(tempdir)))
+    assert pf(mutation_in_line_2, Config(project_root=Path(tmp_path)))
+    assert not pf(mutation_in_line_1, Config(project_root=Path(tmp_path)))
 
 
 def test_patch_filter_from_git_diff_with_base(
-    mutation_in_line_1: Mutation, mutation_in_line_2: Mutation, tempdir: Path
+    mutation_in_line_1: Mutation, mutation_in_line_2: Mutation, tmp_path: Path
 ) -> None:
-    file_path = Path(tempdir) / "myfile.py"
+    file_path = Path(tmp_path) / "myfile.py"
     file_path.write_text(
         dedent(
             """
@@ -221,8 +208,8 @@ def test_patch_filter_from_git_diff_with_base(
             """.lstrip()
         )
     )
-    subprocess.run(["git", "init"], check=True, cwd=tempdir)
-    subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
+    subprocess.run(["git", "init"], check=True, cwd=tmp_path)
+    subprocess.run(["git", "add", "-A"], check=True, cwd=tmp_path)
     subprocess.run(
         [
             "git",
@@ -234,7 +221,7 @@ def test_patch_filter_from_git_diff_with_base(
             '-m"First commit"',
         ],
         check=True,
-        cwd=tempdir,
+        cwd=tmp_path,
     )
 
     file_path.write_text(
@@ -246,7 +233,7 @@ def test_patch_filter_from_git_diff_with_base(
         )
     )
 
-    subprocess.run(["git", "add", "-A"], check=True, cwd=tempdir)
+    subprocess.run(["git", "add", "-A"], check=True, cwd=tmp_path)
     subprocess.run(
         [
             "git",
@@ -258,10 +245,10 @@ def test_patch_filter_from_git_diff_with_base(
             '-m"Second commit"',
         ],
         check=True,
-        cwd=tempdir,
+        cwd=tmp_path,
     )
 
-    pf = PatchFilter.from_git_diff("HEAD~", base="HEAD", project_dir=tempdir)
+    pf = PatchFilter.from_git_diff("HEAD~", base="HEAD", project_dir=tmp_path)
 
-    assert not pf(mutation_in_line_1, Config(project_root=Path(tempdir)))
-    assert pf(mutation_in_line_2, Config(project_root=Path(tempdir)))
+    assert not pf(mutation_in_line_1, Config(project_root=Path(tmp_path)))
+    assert pf(mutation_in_line_2, Config(project_root=Path(tmp_path)))

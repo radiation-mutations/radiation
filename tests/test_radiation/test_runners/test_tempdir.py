@@ -1,10 +1,6 @@
 import ast
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from textwrap import dedent
-from typing import Iterable
-
-import pytest
 
 from radiation.config import Config
 from radiation.mutation import Mutation
@@ -18,19 +14,8 @@ def _dedent(text: str) -> str:
     return dedent(text.lstrip("\n")).rstrip("\n")
 
 
-@pytest.fixture
-def tempdir() -> Iterable[Path]:
-    with TemporaryDirectory() as tempdir:
-        yield Path(tempdir)
-
-
-@pytest.fixture
-def project_path(tempdir: Path) -> Path:
-    return tempdir
-
-
-def test_tempdir_runner_surviving_mutant(project_path: Path) -> None:
-    (project_path / "code.py").write_text(
+def test_tempdir_runner_surviving_mutant(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             def fib(n: int) -> int:
@@ -41,7 +26,7 @@ def test_tempdir_runner_surviving_mutant(project_path: Path) -> None:
         )
     )
 
-    (project_path / "test_code.py").write_text(
+    (tmp_path / "test_code.py").write_text(
         _dedent(
             """
             from code import fib
@@ -74,17 +59,17 @@ def test_tempdir_runner_surviving_mutant(project_path: Path) -> None:
                     node=NodeContext(
                         lineno=2, end_lineno=2, col_offset=7, end_col_offset=13
                     ),
-                    file=FileContext(path=project_path / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=project_path),
+            Config(project_root=tmp_path),
         )
         == SuccessStatus.SURVIVED
     )
 
 
-def test_tempdir_runner_killed_mutant(project_path: Path) -> None:
-    (project_path / "code.py").write_text(
+def test_tempdir_runner_killed_mutant(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text(
         _dedent(
             """
             def fib(n: int) -> int:
@@ -95,7 +80,7 @@ def test_tempdir_runner_killed_mutant(project_path: Path) -> None:
         )
     )
 
-    (project_path / "test_code.py").write_text(
+    (tmp_path / "test_code.py").write_text(
         _dedent(
             """
             from code import fib
@@ -128,17 +113,17 @@ def test_tempdir_runner_killed_mutant(project_path: Path) -> None:
                     node=NodeContext(
                         lineno=2, end_lineno=2, col_offset=12, end_col_offset=13
                     ),
-                    file=FileContext(path=project_path / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=project_path),
+            Config(project_root=tmp_path),
         )
         == SuccessStatus.KILLED
     )
 
 
-def test_tempdir_runner_timed_out_mutant(project_path: Path) -> None:
-    (project_path / "code.py").write_text("1")
+def test_tempdir_runner_timed_out_mutant(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text("1")
 
     assert (
         TempDirRunner("sleep 0.1", timeout=0.05)(
@@ -149,17 +134,17 @@ def test_tempdir_runner_timed_out_mutant(project_path: Path) -> None:
                     node=NodeContext(
                         lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
                     ),
-                    file=FileContext(path=project_path / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=project_path),
+            Config(project_root=tmp_path),
         )
         == SuccessStatus.TIMED_OUT
     )
 
 
-def test_tempdir_runner_not_timed_out_mutant(project_path: Path) -> None:
-    (project_path / "code.py").write_text("1")
+def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text("1")
 
     assert (
         TempDirRunner("sleep 0.05", timeout=0.1)(
@@ -170,10 +155,10 @@ def test_tempdir_runner_not_timed_out_mutant(project_path: Path) -> None:
                     node=NodeContext(
                         lineno=1, end_lineno=1, col_offset=0, end_col_offset=1
                     ),
-                    file=FileContext(path=project_path / "code.py"),
+                    file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=project_path),
+            Config(project_root=tmp_path),
         )
         == SuccessStatus.SURVIVED
     )
