@@ -28,6 +28,7 @@ def test_read_default_config_cfg(project_dir: Path) -> None:
             include = .
             tests_dir = tests
             run_command = poetry install && poetry run pytest
+            tests_timeout = 2.5
             """
         )
     )
@@ -37,6 +38,28 @@ def test_read_default_config_cfg(project_dir: Path) -> None:
         project_root=project_dir,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
+        tests_timeout=2.5,
+    )
+
+
+def test_read_default_config_cfg_no_timeout(project_dir: Path) -> None:
+    (project_dir / ".radiation.cfg").write_text(
+        _dedent(
+            """
+            [settings]
+            include = .
+            tests_dir = tests
+            run_command = poetry install && poetry run pytest
+            """
+        )
+    )
+
+    assert read_default_config(project_dir) == CLIConfig(
+        include=["."],
+        project_root=project_dir,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=None,
     )
 
 
@@ -70,6 +93,7 @@ def test_read_default_config_toml(project_dir: Path) -> None:
             include = "."
             tests_dir = "tests"
             run_command = "poetry install && poetry run pytest"
+            tests_timeout = 2.5
             """
         )
     )
@@ -79,6 +103,28 @@ def test_read_default_config_toml(project_dir: Path) -> None:
         project_root=project_dir,
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
+        tests_timeout=2.5,
+    )
+
+
+def test_read_default_config_toml_no_timeout(project_dir: Path) -> None:
+    (project_dir / ".radiation.toml").write_text(
+        _dedent(
+            """
+            [settings]
+            include = "."
+            tests_dir = "tests"
+            run_command = "poetry install && poetry run pytest"
+            """
+        )
+    )
+
+    assert read_default_config(project_dir) == CLIConfig(
+        include=["."],
+        project_root=project_dir,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=None,
     )
 
 
