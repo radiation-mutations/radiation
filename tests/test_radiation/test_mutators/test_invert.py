@@ -27,16 +27,6 @@ IfOrWhile = Union[If, While]
                 ),
             ),
         ),
-        (
-            "5 if 5 < 3 else 3",
-            "5 if (not 5 < 3) else 3",
-            Context(
-                file=FileContext(path=Path("a.py")),
-                node=NodeContext(
-                    lineno=1, end_lineno=1, col_offset=5, end_col_offset=10
-                ),
-            ),
-        ),
     ),
 )
 def test_invert_expr(
@@ -52,6 +42,32 @@ def test_invert_expr(
                 output_context,
             )
         ],
+    )
+
+
+def test_dont_invert_compare_expr(dummy_context: Context) -> None:
+    mutations = invert(get_node_from_expr("5 if 5 < 3 else 3"), dummy_context)
+    assert_results_equal(
+        list(mutations),
+        [],
+    )
+
+
+def test_dont_invert_compare_stmt(dummy_context: Context) -> None:
+    mutations = invert(
+        get_node_from_stmt(
+            dedent(
+                """
+                if 5 < 3:
+                    do_stuff()
+                """.strip()
+            )
+        ),
+        dummy_context,
+    )
+    assert_results_equal(
+        list(mutations),
+        [],
     )
 
 
