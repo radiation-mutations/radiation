@@ -15,6 +15,8 @@ class CLIConfig:
     run_command: str = "pytest"
     tests_dir: str = "tests"
     tests_timeout: Optional[float] = None
+    diff_command: Optional[str] = None
+    line_limit: Optional[int] = None
 
 
 DEFAULT_SECTIONS = ("radiation", "settings")
@@ -38,6 +40,10 @@ def _toml_parse_list(value: str) -> List[str]:
     return [value] if isinstance(value, str) else value
 
 
+def _parse_limit(value: Optional[str]) -> Optional[int]:
+    return int(value) if value and value != "none" else None
+
+
 def _read_toml(
     path: Union[str, Path], possible_sections: Sequence[str] = DEFAULT_SECTIONS
 ) -> Optional[CLIConfig]:
@@ -50,6 +56,8 @@ def _read_toml(
                 tests_dir=config["tests_dir"],
                 project_root=Path(path).parent,
                 tests_timeout=config.get("tests_timeout"),
+                diff_command=config.get("diff_command"),
+                line_limit=_parse_limit(config.get("line_limit")),
             )
     return None
 
@@ -71,6 +79,10 @@ def _read_cfg(
                 tests_dir=parser.get(section, "tests_dir"),
                 project_root=Path(path).parent,
                 tests_timeout=parser.getfloat(section, "tests_timeout", fallback=None),
+                diff_command=parser.get(section, "diff_command", fallback=None),
+                line_limit=_parse_limit(
+                    parser.get(section, "line_limit", fallback=None)
+                ),
             )
     return None
 

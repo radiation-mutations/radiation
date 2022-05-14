@@ -1,3 +1,4 @@
+import subprocess
 from collections import defaultdict
 from dataclasses import replace
 from typing import Any, Dict, List, Optional
@@ -6,6 +7,8 @@ import click
 
 from radiation import Radiation
 from radiation.config import Config
+from radiation.filters.line_limit import LineLimitFilter
+from radiation.filters.patch import PatchFilter
 from radiation.mutation import Mutation
 from radiation.runners import TempDirRunner
 from radiation.types import SuccessStatus
@@ -21,6 +24,12 @@ from radiation_cli.utils import dump_mutation, get_mutation_loc
 def _override_config(config: CLIConfig, overrides: Dict[str, Any]) -> CLIConfig:
     overrides = {key: val for key, val in overrides.items() if val is not None}
     return replace(config, **overrides)
+
+
+def _get_diff(diff_command: str) -> str:
+    return subprocess.run(
+        diff_command, shell=True, capture_output=True, check=True, text=True
+    ).stdout
 
 
 pass_config = click.make_pass_decorator(CLIConfig)
@@ -61,7 +70,7 @@ pass_config = click.make_pass_decorator(CLIConfig)
 @click.option(
     "--tests-timeout",
     type=float,
-    help="maximum time for each test suite to run i seconds",
+    help="maximum time for each test suite to run in seconds",
     required=False,
 )
 @click.option(
@@ -70,6 +79,20 @@ pass_config = click.make_pass_decorator(CLIConfig)
     help="command to run to test a mutation",
     required=False,
     show_default="pytest",
+)
+@click.option(
+    "--diff-command",
+    type=str,
+    help="filter out mutations on unchanged lines according to the diff"
+    " returned from running this command, shell expansions available",
+    required=False,
+)
+@click.option(
+    "--line-limit",
+    type=int,
+    help="limit the number of mutations on any given line",
+    required=False,
+    show_default="none",
 )
 @click.pass_context
 def cli(
@@ -90,10 +113,15 @@ def cli(
 @cli.command(help="run the mutation testing pipeline")
 @pass_config
 def run(config: CLIConfig) -> None:
+    patch = PatchFilter(_get_diff(config.diff_command)) if config.diff_command else None
+    limiter = LineLimitFilter(config.line_limit) if config.line_limit else None
+
     radiation = Radiation(
         runner=TempDirRunner(config.run_command, timeout=config.tests_timeout),
+        filters=list(filter(None, [patch, limiter])),
         config=Config(project_root=config.project_root),
     )
+
     mutations = [
         mutation
         for path in radiation.find_files(config.include, exclude=config.tests_dir)
