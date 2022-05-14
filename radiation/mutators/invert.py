@@ -1,4 +1,4 @@
-from ast import AST, If, IfExp, Not, UnaryOp, While
+from ast import AST, Compare, If, IfExp, Not, UnaryOp, While
 from typing import Iterator
 
 from ..context import get_context
@@ -11,7 +11,7 @@ def _invert(node: AST) -> AST:
 
 
 def invert(node: AST, context: Context) -> Iterator[Mutation]:
-    if isinstance(node, (IfExp, If, While)):
+    if isinstance(node, (IfExp, If, While)) and not isinstance(node.test, Compare):
         yield Mutation(
             type(node)(body=node.body, test=_invert(node.test), orelse=node.orelse),
             _invert(node.test),
