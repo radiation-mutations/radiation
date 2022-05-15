@@ -85,3 +85,56 @@ def test_cli_run(project_path: Path) -> None:
     )
     assert result.stderr == ""
     assert result.exit_code == 0
+
+
+def test_cli_run_line_limit(project_path: Path) -> None:
+    cli_runner = CliRunner(mix_stderr=False)
+    result = cli_runner.invoke(
+        cli, ["--line-limit", "1", "-p", str(project_path), "run"]
+    )
+    assert result.stdout.rstrip("\n") == _dedent(
+        """
+        Generated 3 mutations
+        Running tests
+
+        Surviving mutant in code.py:3
+        1 from typing import List
+        2 
+        3 def grep(lines: List[str], line: str, context: int = -1) -> List[str]:
+        4     index = lines.index(line)
+        5     start = max(0, index - context)
+        """  # noqa: W291
+    )
+    assert result.stderr == ""
+    assert result.exit_code == 0
+
+
+def test_cli_run_with_diff(project_path: Path) -> None:
+    cli_runner = CliRunner(mix_stderr=False)
+
+    (project_path / "patch").write_text(
+        _dedent(
+            """
+            diff --git blabla
+            index 1d36346..6a53a30 100644
+            --- a/oldfilename.py
+            +++ b/code.py
+            @@ -5,1 +5,1 @@
+            -start = max(1, index - context)
+            +start = max(0, index - context)
+            """
+        )
+    )
+
+    result = cli_runner.invoke(
+        cli, ["--diff-command", "cat patch", "-p", str(project_path), "run"]
+    )
+
+    assert result.stdout.rstrip("\n") == _dedent(
+        """
+        Generated 3 mutations
+        Running tests
+        """
+    )
+    assert result.stderr == ""
+    assert result.exit_code == 0

@@ -1,4 +1,3 @@
-import subprocess
 from collections import defaultdict
 from dataclasses import replace
 from typing import Any, Dict, List, Optional
@@ -24,12 +23,6 @@ from radiation_cli.utils import dump_mutation, get_mutation_loc
 def _override_config(config: CLIConfig, overrides: Dict[str, Any]) -> CLIConfig:
     overrides = {key: val for key, val in overrides.items() if val is not None}
     return replace(config, **overrides)
-
-
-def _get_diff(diff_command: str) -> str:
-    return subprocess.run(
-        diff_command, shell=True, capture_output=True, check=True, text=True
-    ).stdout
 
 
 pass_config = click.make_pass_decorator(CLIConfig)
@@ -113,7 +106,13 @@ def cli(
 @cli.command(help="run the mutation testing pipeline")
 @pass_config
 def run(config: CLIConfig) -> None:
-    patch = PatchFilter(_get_diff(config.diff_command)) if config.diff_command else None
+    patch = (
+        PatchFilter.from_shell_command(
+            config.diff_command, project_dir=config.project_root
+        )
+        if config.diff_command
+        else None
+    )
     limiter = LineLimitFilter(config.line_limit) if config.line_limit else None
 
     radiation = Radiation(
