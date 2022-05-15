@@ -31,7 +31,7 @@ jobs:
       - name: Run radiation
         id: mutate
         run: |
-          OUTPUT=$(poetry run radiation --diff-command="git diff origin/master" run)
+          OUTPUT="$(poetry run radiation --diff-command="git diff origin/master" run)"
           echo "::set-output name=OUTPUT::$OUTPUT"
 
       - name: Comment PR
