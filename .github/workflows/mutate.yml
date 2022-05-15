@@ -14,17 +14,24 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: "3.8"
+          
+      - name: fetch
+        run: |
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          
       - name: Install poetry
         run: |
           python -m pip install --upgrade pip
           pip install poetry
+          
       - name: Install dependencies
         run: |
           make install
+          
       - name: Run radiation
         id: mutate
         run: |
-          OUTPUT=$(poetry run radiation run)
+          OUTPUT=$(poetry run radiation --diff-command="git diff origin/master" run)
           echo "::set-output name=OUTPUT::$OUTPUT"
 
       - name: Comment PR
