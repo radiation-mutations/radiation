@@ -13,6 +13,7 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: mutate
+        id: mutate
         run: |
           OUTPUT=$(echo "test test")
           echo "::set-output name=OUTPUT::$OUTPUT"
