@@ -90,8 +90,16 @@ Options:
   -p, --project-root PATH  path to project to run on  [default: (cwd)]
   -i, --include TEXT       paths from which to take files for mutation, can be
                            globs
+  --tests-dir TEXT         path to the tests, will not be mutated  [default:
+                           (tests)]
+  --tests-timeout FLOAT    maximum time for each test suite to run in seconds
   --run-command TEXT       command to run to test a mutation  [default:
                            (pytest)]
+  --diff-command TEXT      filter out mutations on unchanged lines according
+                           to the diff returned from running this command,
+                           shell expansions available
+  --line-limit INTEGER     limit the number of mutations on any given line
+                           [default: (none)]
   --help                   Show this message and exit.
 
 Commands:
