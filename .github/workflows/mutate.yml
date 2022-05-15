@@ -15,7 +15,7 @@ jobs:
       - name: mutate
         run: |
           OUTPUT=$(echo "test test")
-          echo '::set-output name=OUTPUT::$OUTPUT'
+          echo "::set-output name=OUTPUT::$OUTPUT"
 
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v1
