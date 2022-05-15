@@ -40,6 +40,22 @@ class PatchFilter:
         return False
 
     @classmethod
+    def from_shell_command(
+        cls,
+        command: str,
+        project_dir: Optional[Union[str, Path]] = None,
+    ) -> PatchFilter:
+        completed_process = subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
+            shell=True,
+            cwd=project_dir,
+        )
+        return PatchFilter(patch=completed_process.stdout)
+
+    @classmethod
     def from_git_diff(
         cls,
         target: str,

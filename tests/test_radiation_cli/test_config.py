@@ -21,6 +21,8 @@ def test_read_default_config_cfg(tmp_path: Path) -> None:
             tests_dir = tests
             run_command = poetry install && poetry run pytest
             tests_timeout = 2.5
+            diff_command = git diff develop
+            line_limit = 4
             """
         )
     )
@@ -31,6 +33,32 @@ def test_read_default_config_cfg(tmp_path: Path) -> None:
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
         tests_timeout=2.5,
+        diff_command="git diff develop",
+        line_limit=4,
+    )
+
+
+def test_read_default_config_limit_none(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.cfg").write_text(
+        _dedent(
+            """
+            [settings]
+            include = .
+            tests_dir = tests
+            run_command = poetry install && poetry run pytest
+            tests_timeout = 2.5
+            line_limit = none
+            """
+        )
+    )
+
+    assert read_default_config(tmp_path) == CLIConfig(
+        include=["."],
+        project_root=tmp_path,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=2.5,
+        line_limit=None,
     )
 
 
@@ -86,6 +114,8 @@ def test_read_default_config_toml(tmp_path: Path) -> None:
             tests_dir = "tests"
             run_command = "poetry install && poetry run pytest"
             tests_timeout = 2.5
+            diff_command = "git diff develop"
+            line_limit = 4
             """
         )
     )
@@ -96,6 +126,32 @@ def test_read_default_config_toml(tmp_path: Path) -> None:
         run_command="poetry install && poetry run pytest",
         tests_dir="tests",
         tests_timeout=2.5,
+        diff_command="git diff develop",
+        line_limit=4,
+    )
+
+
+def test_read_default_config_toml_limit_none(tmp_path: Path) -> None:
+    (tmp_path / ".radiation.toml").write_text(
+        _dedent(
+            """
+            [settings]
+            include = "."
+            tests_dir = "tests"
+            run_command = "poetry install && poetry run pytest"
+            tests_timeout = 2.5
+            line_limit = "none"
+            """
+        )
+    )
+
+    assert read_default_config(tmp_path) == CLIConfig(
+        include=["."],
+        project_root=tmp_path,
+        run_command="poetry install && poetry run pytest",
+        tests_dir="tests",
+        tests_timeout=2.5,
+        line_limit=None,
     )
 
 
