@@ -24,7 +24,7 @@ jobs:
       - name: Run radiation
         id: mutate
         run: |
-          OUTPUT=$(poetry run radiation run")
+          OUTPUT=$(poetry run radiation run)
           echo "::set-output name=OUTPUT::$OUTPUT"
 
       - name: Comment PR
