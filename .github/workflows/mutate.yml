@@ -20,5 +20,5 @@ jobs:
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v1
         with:
-          message: ${{ steps.step1.outputs.OUTPUT }}
+          message: ${{ steps.mutate.outputs.OUTPUT }}
           GITHUB_TOKEN: ${{ secrets.CI_TOKEN }}
