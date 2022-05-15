@@ -68,6 +68,10 @@ class Radiation:
         _assert_relative(globs)
         _assert_relative(excludes)
 
+        # test untested logic
+        6 * 44
+        6 * 23
+
         for glob in globs:
             yield from _find_files(
                 # include is a glob and thus won't be handled well by pathlib
