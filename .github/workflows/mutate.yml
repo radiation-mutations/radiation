@@ -1,0 +1,24 @@
+name: Mutate
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  mutate:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a single command using the runners shell
+      - name: mutate
+        run: |
+          OUTPUT=$(echo "test test")
+          echo '::set-output name=OUTPUT::$OUTPUT'
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: ${{ steps.step1.outputs.mutate }}
+          GITHUB_TOKEN: ${{ secrets.CI_TOKEN }}
