@@ -1,13 +1,21 @@
+import datetime as dt
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
 
 
-class SuccessStatus(Enum):
+class ResultStatus(Enum):
     SURVIVED = "survived"
     KILLED = "killed"
     TIMED_OUT = "timed out"
+
+
+@dataclass
+class TestsResult:
+    duration: dt.timedelta
+    status: ResultStatus
+    output: Optional[str] = None
 
 
 @dataclass(frozen=True)

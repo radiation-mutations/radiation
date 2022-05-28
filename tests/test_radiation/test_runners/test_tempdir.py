@@ -1,11 +1,13 @@
 import ast
+import datetime as dt
+from dataclasses import replace
 from pathlib import Path
 from textwrap import dedent
 
 from radiation.config import Config
 from radiation.mutation import Mutation
 from radiation.runners import TempDirRunner
-from radiation.types import Context, FileContext, NodeContext, SuccessStatus
+from radiation.types import Context, FileContext, NodeContext, ResultStatus, TestsResult
 
 from ..utils import get_node_from_expr
 
@@ -42,29 +44,34 @@ def test_tempdir_runner_surviving_mutant(tmp_path: Path) -> None:
     )
 
     assert (
-        TempDirRunner("python test_code.py")(
-            Mutation(
-                node=get_node_from_expr("n < 2"),
-                tree=ast.parse(
-                    _dedent(
-                        """
+        replace(
+            TempDirRunner("python test_code.py").run_mutation(
+                Mutation(
+                    node=get_node_from_expr("n < 2"),
+                    tree=ast.parse(
+                        _dedent(
+                            """
                         def fib(n: int) -> int:
                             if n < 2:
                                 return 1
                             return fib(n - 2) + fib(n - 1)
                         """
-                    )
-                ),
-                context=Context(
-                    node=NodeContext(
-                        lineno=2, end_lineno=2, col_offset=7, end_col_offset=13
+                        )
                     ),
-                    file=FileContext(path=tmp_path / "code.py"),
+                    context=Context(
+                        node=NodeContext(
+                            lineno=2, end_lineno=2, col_offset=7, end_col_offset=13
+                        ),
+                        file=FileContext(path=tmp_path / "code.py"),
+                    ),
                 ),
+                config=Config(project_root=tmp_path),
             ),
-            Config(project_root=tmp_path),
+            duration=dt.timedelta(1),
         )
-        == SuccessStatus.SURVIVED
+        == TestsResult(
+            duration=dt.timedelta(1), status=ResultStatus.SURVIVED, output=""
+        )
     )
 
 
@@ -96,37 +103,40 @@ def test_tempdir_runner_killed_mutant(tmp_path: Path) -> None:
     )
 
     assert (
-        TempDirRunner("python test_code.py")(
-            Mutation(
-                node=get_node_from_expr("2"),
-                tree=ast.parse(
-                    _dedent(
-                        """
+        replace(
+            TempDirRunner("python test_code.py").run_mutation(
+                Mutation(
+                    node=get_node_from_expr("2"),
+                    tree=ast.parse(
+                        _dedent(
+                            """
                         def fib(n: int) -> int:
                             if n <= 2:
                                 return 1
                             return fib(n - 2) + fib(n - 1)
                         """
-                    )
-                ),
-                context=Context(
-                    node=NodeContext(
-                        lineno=2, end_lineno=2, col_offset=12, end_col_offset=13
+                        )
                     ),
-                    file=FileContext(path=tmp_path / "code.py"),
+                    context=Context(
+                        node=NodeContext(
+                            lineno=2, end_lineno=2, col_offset=12, end_col_offset=13
+                        ),
+                        file=FileContext(path=tmp_path / "code.py"),
+                    ),
                 ),
+                config=Config(project_root=tmp_path),
             ),
-            Config(project_root=tmp_path),
+            duration=dt.timedelta(1),
         )
-        == SuccessStatus.KILLED
+        == TestsResult(duration=dt.timedelta(1), status=ResultStatus.KILLED, output="")
     )
 
 
 def test_tempdir_runner_timed_out_mutant(tmp_path: Path) -> None:
     (tmp_path / "code.py").write_text("1")
 
-    assert (
-        TempDirRunner("sleep 0.1", timeout=0.05)(
+    assert replace(
+        TempDirRunner("sleep 0.1").run_mutation(
             Mutation(
                 node=get_node_from_expr("2"),
                 tree=get_node_from_expr("2"),
@@ -137,17 +147,20 @@ def test_tempdir_runner_timed_out_mutant(tmp_path: Path) -> None:
                     file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=tmp_path),
-        )
-        == SuccessStatus.TIMED_OUT
+            config=Config(project_root=tmp_path),
+            timeout=0.05,
+        ),
+        duration=dt.timedelta(1),
+    ) == TestsResult(
+        duration=dt.timedelta(1), status=ResultStatus.TIMED_OUT, output=None
     )
 
 
 def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
     (tmp_path / "code.py").write_text("1")
 
-    assert (
-        TempDirRunner("sleep 0.05", timeout=0.1)(
+    assert replace(
+        TempDirRunner("sleep 0.05").run_mutation(
             Mutation(
                 node=get_node_from_expr("2"),
                 tree=get_node_from_expr("2"),
@@ -158,7 +171,8 @@ def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
                     file=FileContext(path=tmp_path / "code.py"),
                 ),
             ),
-            Config(project_root=tmp_path),
-        )
-        == SuccessStatus.SURVIVED
-    )
+            config=Config(project_root=tmp_path),
+            timeout=0.1,
+        ),
+        duration=dt.timedelta(1),
+    ) == TestsResult(duration=dt.timedelta(1), status=ResultStatus.SURVIVED, output="")

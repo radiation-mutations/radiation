@@ -13,8 +13,8 @@ from .filters import MutantFilter, get_default_filters
 from .gen import gen_mutations
 from .mutation import Mutation
 from .mutators import Mutator, get_default_mutators
-from .runners import Runner, TempDirRunner
-from .types import Context, FileContext, NodeContext, SuccessStatus
+from .runners import Runner
+from .types import Context, FileContext, NodeContext, TestsResult
 
 
 def _get_initial_context(path: Path, module: Module) -> Context:
@@ -52,7 +52,7 @@ def _assert_relative(paths: List[str]) -> None:
 @dataclass(frozen=True)
 class Radiation:
     config: Config
-    runner: Optional[Runner] = field(default=None)
+    runner: Runner
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
     mutators: Sequence[Mutator] = field(default_factory=get_default_mutators)
 
@@ -97,6 +97,11 @@ class Radiation:
     def gen_mutations(self, path: Union[str, Path]) -> Iterable[Mutation]:
         yield from self.gen_mutations_str(Path(path).read_text(), path)
 
-    def test_mutation(self, mutation: Mutation, *, run_command: str) -> SuccessStatus:
-        runner = self.runner or TempDirRunner(run_command=run_command)
-        return runner(mutation, self.config)
+    def test_baseline(self) -> TestsResult:
+        return self.runner.run_baseline(config=self.config)
+
+    def test_mutation(self, mutation: Mutation, *, timeout: float) -> TestsResult:
+        return self.runner.run_mutation(mutation, config=self.config, timeout=timeout)
+
+    def unsafe_test_mutation(self, mutation: Mutation) -> TestsResult:
+        return self.runner.run_mutation(mutation, config=self.config)

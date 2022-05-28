@@ -66,6 +66,7 @@ def test_cli_run(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 9 mutations
+        Running baseline tests ..
         Running tests
 
         Surviving mutant in code.py:3
@@ -95,6 +96,7 @@ def test_cli_run_line_limit(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 3 mutations
+        Running baseline tests ..
         Running tests
 
         Surviving mutant in code.py:3
@@ -133,6 +135,7 @@ def test_cli_run_with_diff(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 3 mutations
+        Running baseline tests ..
         Running tests
         """
     )

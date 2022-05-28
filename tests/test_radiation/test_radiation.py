@@ -8,6 +8,7 @@ import pytest
 from radiation import Radiation
 from radiation.config import Config
 from radiation.mutation import Mutation
+from radiation.runners import TempDirRunner
 from radiation.types import Context, FileContext, NodeContext
 
 from .utils import assert_results_equal
@@ -33,7 +34,12 @@ def project_dir(tmp_path: Path) -> Iterable[Path]:
 
 
 def test_find_files(project_dir: Path) -> None:
-    assert list(Radiation(config=Config(project_root=project_dir)).find_files(".")) == [
+    assert list(
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files(".")
+    ) == [
         project_dir / "a.py",
         project_dir / "b.py",
         project_dir / "dir" / "b.py",
@@ -44,7 +50,10 @@ def test_find_files(project_dir: Path) -> None:
 
 def test_find_files_in_multiple_includes(project_dir: Path) -> None:
     assert list(
-        Radiation(config=Config(project_root=project_dir)).find_files(["dir", "b*"])
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files(["dir", "b*"])
     ) == [
         project_dir / "dir" / "b.py",
         project_dir / "b.py",
@@ -53,9 +62,10 @@ def test_find_files_in_multiple_includes(project_dir: Path) -> None:
 
 def test_find_files_exclude_dir(project_dir: Path) -> None:
     assert list(
-        Radiation(config=Config(project_root=project_dir)).find_files(
-            ".", exclude="otherdir"
-        )
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files(".", exclude="otherdir")
     ) == [
         project_dir / "a.py",
         project_dir / "b.py",
@@ -65,9 +75,10 @@ def test_find_files_exclude_dir(project_dir: Path) -> None:
 
 def test_find_files_exclude_dirs(project_dir: Path) -> None:
     assert list(
-        Radiation(config=Config(project_root=project_dir)).find_files(
-            ".", excludes=["otherdir", "dir"]
-        )
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files(".", excludes=["otherdir", "dir"])
     ) == [
         project_dir / "a.py",
         project_dir / "b.py",
@@ -77,9 +88,10 @@ def test_find_files_exclude_dirs(project_dir: Path) -> None:
 def test_find_files_exclude_all(project_dir: Path) -> None:
     assert (
         list(
-            Radiation(config=Config(project_root=project_dir)).find_files(
-                ".", exclude="."
-            )
+            Radiation(
+                runner=TempDirRunner(run_command=""),
+                config=Config(project_root=project_dir),
+            ).find_files(".", exclude=".")
         )
         == []
     )
@@ -87,7 +99,10 @@ def test_find_files_exclude_all(project_dir: Path) -> None:
 
 def test_find_files_include_glob_to_dir(project_dir: Path) -> None:
     assert list(
-        Radiation(config=Config(project_root=project_dir)).find_files("*dir")
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files("*dir")
     ) == [
         project_dir / "dir" / "b.py",
         project_dir / "otherdir" / "b.py",
@@ -97,21 +112,30 @@ def test_find_files_include_glob_to_dir(project_dir: Path) -> None:
 
 def test_find_files_include_glob_to_files(project_dir: Path) -> None:
     assert list(
-        Radiation(config=Config(project_root=project_dir)).find_files("*dir/*.py")
+        Radiation(
+            runner=TempDirRunner(run_command=""),
+            config=Config(project_root=project_dir),
+        ).find_files("*dir/*.py")
     ) == [project_dir / "dir" / "b.py", project_dir / "otherdir" / "b.py"]
 
 
 def test_find_files_doesnt_allow_absolute_includes(project_dir: Path) -> None:
     with pytest.raises(AssertionError, match="must be relative"):
-        list(Radiation(config=Config(project_root=project_dir)).find_files("/dir/*.py"))
+        list(
+            Radiation(
+                runner=TempDirRunner(run_command=""),
+                config=Config(project_root=project_dir),
+            ).find_files("/dir/*.py")
+        )
 
 
 def test_find_files_doesnt_allow_absolute_excludes(project_dir: Path) -> None:
     with pytest.raises(AssertionError, match="must be relative"):
         list(
-            Radiation(config=Config(project_root=project_dir)).find_files(
-                ".", exclude="/dir/*.py"
-            )
+            Radiation(
+                runner=TempDirRunner(run_command=""),
+                config=Config(project_root=project_dir),
+            ).find_files(".", exclude="/dir/*.py")
         )
 
 
@@ -122,7 +146,9 @@ def test_gen_mutations_str(project_dir: Path) -> None:
     assert_results_equal(
         list(
             Radiation(
-                mutators=[mutator], config=Config(project_root=project_dir)
+                runner=TempDirRunner(run_command=""),
+                mutators=[mutator],
+                config=Config(project_root=project_dir),
             ).gen_mutations_str(
                 "a + 6",
             )
@@ -194,7 +220,9 @@ def test_gen_mutations_str_abs_path(project_dir: Path) -> None:
     assert_results_equal(
         list(
             Radiation(
-                mutators=[mutator], config=Config(project_root=project_dir)
+                runner=TempDirRunner(run_command=""),
+                mutators=[mutator],
+                config=Config(project_root=project_dir),
             ).gen_mutations_str("a + 6", path=project_dir / "code.py")
         ),
         [
@@ -264,7 +292,9 @@ def test_gen_mutations_str_rel_path(project_dir: Path) -> None:
     assert_results_equal(
         list(
             Radiation(
-                mutators=[mutator], config=Config(project_root=project_dir)
+                runner=TempDirRunner(run_command=""),
+                mutators=[mutator],
+                config=Config(project_root=project_dir),
             ).gen_mutations_str("a + 6", path="code.py")
         ),
         [
@@ -334,7 +364,9 @@ def test_gen_mutations_str_empty(project_dir: Path) -> None:
     assert (
         list(
             Radiation(
-                mutators=[mutator], config=Config(project_root=project_dir)
+                runner=TempDirRunner(run_command=""),
+                mutators=[mutator],
+                config=Config(project_root=project_dir),
             ).gen_mutations_str("")
         )
         == []
@@ -350,7 +382,9 @@ def test_gen_mutations(project_dir: Path) -> None:
     assert_results_equal(
         list(
             Radiation(
-                mutators=[mutator], config=Config(project_root=project_dir)
+                runner=TempDirRunner(run_command=""),
+                mutators=[mutator],
+                config=Config(project_root=project_dir),
             ).gen_mutations(project_dir / "otherdir" / "b.py")
         ),
         [

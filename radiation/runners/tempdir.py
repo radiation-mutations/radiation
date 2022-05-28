@@ -1,21 +1,59 @@
+import datetime as dt
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from shutil import copytree
 from tempfile import TemporaryDirectory
-from typing import Optional
+from typing import Optional, Union
 
 from ..config import Config
 from ..mutation import Mutation, apply_mutation_on_disk
-from ..types import SuccessStatus
+from ..types import ResultStatus, TestsResult
 
 
 @dataclass
 class TempDirRunner:
     run_command: str
-    timeout: Optional[float] = None
+    # timeout: Optional[float] = None
 
-    def __call__(self, mutation: Mutation, config: Config) -> SuccessStatus:
+    def _run_tests_in_dir(
+        self, cwd: Union[str, Path], *, timeout: Optional[float] = None
+    ) -> TestsResult:
+        start_time = dt.datetime.now()
+        try:
+            completed_process = subprocess.run(
+                self.run_command,
+                shell=True,
+                capture_output=True,
+                cwd=cwd,
+                timeout=timeout,
+                text=True,
+            )
+        except subprocess.TimeoutExpired:
+            return TestsResult(
+                duration=dt.datetime.now() - start_time,
+                status=ResultStatus.TIMED_OUT,
+            )
+        return TestsResult(
+            duration=dt.datetime.now() - start_time,
+            status=(
+                ResultStatus.SURVIVED
+                if completed_process.returncode == 0
+                else ResultStatus.KILLED
+            ),
+            output=completed_process.stdout,
+        )
+
+    def run_baseline(
+        self, *, config: Config, timeout: Optional[float] = None
+    ) -> TestsResult:
+        with TemporaryDirectory() as tempdir:
+            copytree(config.project_root, tempdir, dirs_exist_ok=True)
+            return self._run_tests_in_dir(tempdir, timeout=timeout)
+
+    def run_mutation(
+        self, mutation: Mutation, *, config: Config, timeout: Optional[float] = None
+    ) -> TestsResult:
         mut_rel_path = mutation.context.file.path.relative_to(config.project_root)
         with TemporaryDirectory() as tempdir:
             copytree(config.project_root, tempdir, dirs_exist_ok=True)
@@ -23,16 +61,4 @@ class TempDirRunner:
                 Path(tempdir) / mut_rel_path,
                 mutation,
             )
-            try:
-                completed_process = subprocess.run(
-                    self.run_command,
-                    shell=True,
-                    capture_output=True,
-                    cwd=tempdir,
-                    timeout=self.timeout,
-                )
-            except subprocess.TimeoutExpired:
-                return SuccessStatus.TIMED_OUT
-            if completed_process.returncode != 0:
-                return SuccessStatus.KILLED
-            return SuccessStatus.SURVIVED
+            return self._run_tests_in_dir(tempdir, timeout=timeout)

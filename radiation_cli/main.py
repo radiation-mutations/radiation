@@ -10,7 +10,7 @@ from radiation.filters.line_limit import LineLimitFilter
 from radiation.filters.patch import PatchFilter
 from radiation.mutation import Mutation
 from radiation.runners import TempDirRunner
-from radiation.types import SuccessStatus
+from radiation.types import ResultStatus
 from radiation_cli.config import (
     CLIConfig,
     read_config,
@@ -116,7 +116,7 @@ def run(config: CLIConfig) -> None:
     limiter = LineLimitFilter(config.line_limit) if config.line_limit else None
 
     radiation = Radiation(
-        runner=TempDirRunner(config.run_command, timeout=config.tests_timeout),
+        runner=TempDirRunner(run_command=config.run_command),
         filters=list(filter(None, [patch, limiter])),
         config=Config(project_root=config.project_root),
     )
@@ -129,7 +129,13 @@ def run(config: CLIConfig) -> None:
 
     click.echo(f"Generated {len(mutations)} mutations")
 
-    results: Dict[SuccessStatus, List[Mutation]] = defaultdict(list)
+    click.echo("Running baseline tests ..")
+    result = radiation.test_baseline()
+    timeout = min(
+        result.duration.total_seconds() * 1.5, config.tests_timeout or float("inf")
+    )
+
+    results: Dict[ResultStatus, List[Mutation]] = defaultdict(list)
 
     with click.progressbar(
         mutations,
@@ -139,13 +145,13 @@ def run(config: CLIConfig) -> None:
     ) as progress_bar:
 
         for mutation in progress_bar:
-            result = radiation.test_mutation(mutation, run_command=config.run_command)
-            results[result].append(mutation)
+            result = radiation.test_mutation(mutation, timeout=timeout)
+            results[result.status].append(mutation)
 
-    for mutation in results[SuccessStatus.SURVIVED]:
+    for mutation in results[ResultStatus.SURVIVED]:
         dump_mutation(mutation, status="surviving", config=config)
 
-    for mutation in results[SuccessStatus.TIMED_OUT]:
+    for mutation in results[ResultStatus.TIMED_OUT]:
         dump_mutation(mutation, status="timed out", config=config)
 
 
