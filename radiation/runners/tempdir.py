@@ -8,13 +8,12 @@ from typing import Optional, Union
 
 from ..config import Config
 from ..mutation import Mutation, apply_mutation_on_disk
-from ..types import ResultStatus, TestsResult
+from ..types import TestsResult
 
 
 @dataclass
 class TempDirRunner:
     run_command: str
-    # timeout: Optional[float] = None
 
     def _run_tests_in_dir(
         self, cwd: Union[str, Path], *, timeout: Optional[float] = None
@@ -32,26 +31,22 @@ class TempDirRunner:
         except subprocess.TimeoutExpired:
             return TestsResult(
                 duration=dt.datetime.now() - start_time,
-                status=ResultStatus.TIMED_OUT,
+                status="timed out",
             )
         return TestsResult(
             duration=dt.datetime.now() - start_time,
-            status=(
-                ResultStatus.SURVIVED
-                if completed_process.returncode == 0
-                else ResultStatus.KILLED
-            ),
+            status=("survived" if completed_process.returncode == 0 else "killed"),
             output=completed_process.stdout,
         )
 
-    def run_baseline(
+    def run_baseline_tests(
         self, *, config: Config, timeout: Optional[float] = None
     ) -> TestsResult:
         with TemporaryDirectory() as tempdir:
             copytree(config.project_root, tempdir, dirs_exist_ok=True)
             return self._run_tests_in_dir(tempdir, timeout=timeout)
 
-    def run_mutation(
+    def test_mutation(
         self, mutation: Mutation, *, config: Config, timeout: Optional[float] = None
     ) -> TestsResult:
         mut_rel_path = mutation.context.file.path.relative_to(config.project_root)

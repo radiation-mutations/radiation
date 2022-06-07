@@ -1,14 +1,9 @@
 import datetime as dt
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
-
-class ResultStatus(Enum):
-    SURVIVED = "survived"
-    KILLED = "killed"
-    TIMED_OUT = "timed out"
+ResultStatus = Literal["survived", "killed", "timed out"]
 
 
 @dataclass

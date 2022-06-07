@@ -97,11 +97,11 @@ class Radiation:
     def gen_mutations(self, path: Union[str, Path]) -> Iterable[Mutation]:
         yield from self.gen_mutations_str(Path(path).read_text(), path)
 
-    def test_baseline(self) -> TestsResult:
-        return self.runner.run_baseline(config=self.config)
+    def run_baseline_tests(self) -> TestsResult:
+        return self.runner.run_baseline_tests(config=self.config)
 
     def test_mutation(self, mutation: Mutation, *, timeout: float) -> TestsResult:
-        return self.runner.run_mutation(mutation, config=self.config, timeout=timeout)
+        return self.runner.test_mutation(mutation, config=self.config, timeout=timeout)
 
     def unsafe_test_mutation(self, mutation: Mutation) -> TestsResult:
-        return self.runner.run_mutation(mutation, config=self.config)
+        return self.runner.test_mutation(mutation, config=self.config)

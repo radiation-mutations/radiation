@@ -130,7 +130,7 @@ def run(config: CLIConfig) -> None:
     click.echo(f"Generated {len(mutations)} mutations")
 
     click.echo("Running baseline tests ..")
-    result = radiation.test_baseline()
+    result = radiation.run_baseline_tests()
     timeout = min(
         result.duration.total_seconds() * 1.5, config.tests_timeout or float("inf")
     )
@@ -148,10 +148,10 @@ def run(config: CLIConfig) -> None:
             result = radiation.test_mutation(mutation, timeout=timeout)
             results[result.status].append(mutation)
 
-    for mutation in results[ResultStatus.SURVIVED]:
+    for mutation in results["survived"]:
         dump_mutation(mutation, status="surviving", config=config)
 
-    for mutation in results[ResultStatus.TIMED_OUT]:
+    for mutation in results["timed out"]:
         dump_mutation(mutation, status="timed out", config=config)
 
 

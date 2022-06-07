@@ -7,7 +7,7 @@ from textwrap import dedent
 from radiation.config import Config
 from radiation.mutation import Mutation
 from radiation.runners import TempDirRunner
-from radiation.types import Context, FileContext, NodeContext, ResultStatus, TestsResult
+from radiation.types import Context, FileContext, NodeContext, TestsResult as RadiationTestsResult
 
 from ..utils import get_node_from_expr
 
@@ -45,7 +45,7 @@ def test_tempdir_runner_surviving_mutant(tmp_path: Path) -> None:
 
     assert (
         replace(
-            TempDirRunner("python test_code.py").run_mutation(
+            TempDirRunner("python test_code.py").test_mutation(
                 Mutation(
                     node=get_node_from_expr("n < 2"),
                     tree=ast.parse(
@@ -69,9 +69,7 @@ def test_tempdir_runner_surviving_mutant(tmp_path: Path) -> None:
             ),
             duration=dt.timedelta(1),
         )
-        == TestsResult(
-            duration=dt.timedelta(1), status=ResultStatus.SURVIVED, output=""
-        )
+        == RadiationTestsResult(duration=dt.timedelta(1), status="survived", output="")
     )
 
 
@@ -104,7 +102,7 @@ def test_tempdir_runner_killed_mutant(tmp_path: Path) -> None:
 
     assert (
         replace(
-            TempDirRunner("python test_code.py").run_mutation(
+            TempDirRunner("python test_code.py").test_mutation(
                 Mutation(
                     node=get_node_from_expr("2"),
                     tree=ast.parse(
@@ -128,7 +126,7 @@ def test_tempdir_runner_killed_mutant(tmp_path: Path) -> None:
             ),
             duration=dt.timedelta(1),
         )
-        == TestsResult(duration=dt.timedelta(1), status=ResultStatus.KILLED, output="")
+        == RadiationTestsResult(duration=dt.timedelta(1), status="killed", output="")
     )
 
 
@@ -136,7 +134,7 @@ def test_tempdir_runner_timed_out_mutant(tmp_path: Path) -> None:
     (tmp_path / "code.py").write_text("1")
 
     assert replace(
-        TempDirRunner("sleep 0.1").run_mutation(
+        TempDirRunner("sleep 0.1").test_mutation(
             Mutation(
                 node=get_node_from_expr("2"),
                 tree=get_node_from_expr("2"),
@@ -151,16 +149,14 @@ def test_tempdir_runner_timed_out_mutant(tmp_path: Path) -> None:
             timeout=0.05,
         ),
         duration=dt.timedelta(1),
-    ) == TestsResult(
-        duration=dt.timedelta(1), status=ResultStatus.TIMED_OUT, output=None
-    )
+    ) == RadiationTestsResult(duration=dt.timedelta(1), status="timed out", output=None)
 
 
 def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
     (tmp_path / "code.py").write_text("1")
 
     assert replace(
-        TempDirRunner("sleep 0.05").run_mutation(
+        TempDirRunner("sleep 0.05").test_mutation(
             Mutation(
                 node=get_node_from_expr("2"),
                 tree=get_node_from_expr("2"),
@@ -175,4 +171,4 @@ def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
             timeout=0.1,
         ),
         duration=dt.timedelta(1),
-    ) == TestsResult(duration=dt.timedelta(1), status=ResultStatus.SURVIVED, output="")
+    ) == RadiationTestsResult(duration=dt.timedelta(1), status="survived", output="")

@@ -9,12 +9,12 @@ from .tempdir import TempDirRunner
 
 
 class Runner(Protocol):
-    def run_baseline(
+    def run_baseline_tests(
         self, *, config: Config, timeout: Optional[float] = None
     ) -> TestsResult:
         ...
 
-    def run_mutation(
+    def test_mutation(
         self, mutation: Mutation, *, config: Config, timeout: Optional[float] = None
     ) -> TestsResult:
         ...
