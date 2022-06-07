@@ -1,10 +1,8 @@
-import datetime as dt
-from dataclasses import dataclass
-from typing import Callable, Optional, Protocol
+from typing import Optional, Protocol
 
 from ..config import Config
 from ..mutation import Mutation
-from ..types import ResultStatus, TestsResult
+from ..types import TestsResult
 from .tempdir import TempDirRunner
 
 
@@ -18,3 +16,7 @@ class Runner(Protocol):
         self, mutation: Mutation, *, config: Config, timeout: Optional[float] = None
     ) -> TestsResult:
         ...
+
+
+def get_default_runner() -> Runner:
+    return TempDirRunner(run_command="pytest")

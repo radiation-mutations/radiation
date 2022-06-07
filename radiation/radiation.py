@@ -13,7 +13,7 @@ from .filters import MutantFilter, get_default_filters
 from .gen import gen_mutations
 from .mutation import Mutation
 from .mutators import Mutator, get_default_mutators
-from .runners import Runner
+from .runners import Runner, get_default_runner
 from .types import Context, FileContext, NodeContext, TestsResult
 
 
@@ -52,7 +52,7 @@ def _assert_relative(paths: List[str]) -> None:
 @dataclass(frozen=True)
 class Radiation:
     config: Config
-    runner: Runner
+    runner: Runner = field(default_factory=get_default_runner)
     filters: Sequence[MutantFilter] = field(default_factory=get_default_filters)
     mutators: Sequence[Mutator] = field(default_factory=get_default_mutators)
 
