@@ -7,7 +7,8 @@ from textwrap import dedent
 from radiation.config import Config
 from radiation.mutation import Mutation
 from radiation.runners import TempDirRunner
-from radiation.types import Context, FileContext, NodeContext, TestsResult as RadiationTestsResult
+from radiation.types import Context, FileContext, NodeContext
+from radiation.types import TestsResult as RadiationTestsResult
 
 from ..utils import get_node_from_expr
 
