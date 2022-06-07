@@ -3,6 +3,7 @@ from dataclasses import replace
 from typing import Any, Dict, List, Optional
 
 import click
+from click import ClickException
 
 from radiation import Radiation
 from radiation.config import Config
@@ -131,8 +132,19 @@ def run(config: CLIConfig) -> None:
 
     click.echo("Running baseline tests ..")
     result = radiation.run_baseline_tests()
-    timeout = min(
-        result.duration.total_seconds() * 1.5, config.tests_timeout or float("inf")
+
+    if result.status == "killed":
+        click.secho(result.output, fg="red", err=True)
+        raise ClickException(
+            "Cannot test mutations when the baseline "
+            "tests are failing (test command output printed above)"
+        )
+
+    baseline_timeout = result.duration.total_seconds() * 1.5
+    timeout = (
+        min(baseline_timeout, config.tests_timeout)
+        if config.tests_timeout
+        else baseline_timeout
     )
 
     results: Dict[ResultStatus, List[Mutation]] = defaultdict(list)
