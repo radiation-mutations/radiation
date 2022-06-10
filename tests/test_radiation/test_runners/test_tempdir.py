@@ -173,3 +173,82 @@ def test_tempdir_runner_not_timed_out_mutant(tmp_path: Path) -> None:
         ),
         duration=dt.timedelta(1),
     ) == RadiationTestsResult(duration=dt.timedelta(1), status="survived", output="")
+
+
+def test_tempdir_runner_baseline(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text(
+        _dedent(
+            """
+            def fib(n: int) -> int:
+                if n <= 1:
+                    return 1
+                return fib(n - 2) + fib(n - 1)
+            """
+        )
+    )
+
+    (tmp_path / "test_code.py").write_text(
+        _dedent(
+            """
+            from code import fib
+
+            def test_fib() -> int:
+                results = [1, 1, 2, 3, 5, 8, 13, 21]
+                for n, result in enumerate(results):
+                    assert fib(n) == result
+
+            test_fib()
+            """
+        )
+    )
+
+    assert replace(
+        TempDirRunner("python test_code.py").run_baseline_tests(
+            config=Config(project_root=tmp_path),
+        ),
+        duration=dt.timedelta(1),
+    ) == RadiationTestsResult(duration=dt.timedelta(1), status="survived", output="")
+
+
+def test_tempdir_runner_baseline_failed(tmp_path: Path) -> None:
+    (tmp_path / "code.py").write_text(
+        _dedent(
+            """
+            def fib(n: int) -> int:
+                if n <= 1:
+                    return 1
+                return fib(n - 2) + fib(n - 1)
+            """
+        )
+    )
+
+    (tmp_path / "test_code.py").write_text(
+        _dedent(
+            """
+            from code import fib
+
+            def test_fib() -> int:
+                results = [2]
+                for n, result in enumerate(results):
+                    assert fib(n) == result
+
+            test_fib()
+            """
+        )
+    )
+
+    assert replace(
+        TempDirRunner("python test_code.py").run_baseline_tests(
+            config=Config(project_root=tmp_path),
+        ),
+        duration=dt.timedelta(1),
+    ) == RadiationTestsResult(duration=dt.timedelta(1), status="killed", output="")
+
+
+def test_tempdir_runner_baseline_duration(tmp_path: Path) -> None:
+    assert replace(
+        TempDirRunner("sleep 0.2").run_baseline_tests(
+            config=Config(project_root=tmp_path),
+        ),
+        duration=dt.timedelta(1),
+    ).duration > dt.timedelta(seconds=0.2)

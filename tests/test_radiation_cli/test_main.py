@@ -141,3 +141,24 @@ def test_cli_run_with_diff(project_path: Path) -> None:
     )
     assert result.stderr == ""
     assert result.exit_code == 0
+
+
+def test_cli_run_baseline_fails(project_path: Path) -> None:
+    cli_runner = CliRunner(mix_stderr=False)
+    result = cli_runner.invoke(
+        cli,
+        ["-p", str(project_path), "--run-command", "echo 'test text' && false", "run"],
+    )
+    assert result.stdout.rstrip("\n") == _dedent(
+        """
+        Generated 9 mutations
+        Running baseline tests ..
+        """
+    )
+    assert result.stderr == (
+        "test text\n"
+        "\n"
+        "Error: Cannot test mutations when the baseline tests "
+        "are failing (test command output printed above)\n"
+    )
+    assert result.exit_code == 1
