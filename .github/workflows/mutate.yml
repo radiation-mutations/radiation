@@ -31,8 +31,9 @@ jobs:
       - name: Run radiation
         id: mutate
         run: |
+          NL=$'\n'
           OUTPUT="# Radiation mutations report"
-          OUTPUT="${OUTPUT}\n$(poetry run radiation --line-limit 2 --diff-command='git diff origin/master' run)"
+          OUTPUT="${OUTPUT}${NL}$(poetry run radiation --line-limit 2 --diff-command='git diff origin/master' run)"
           OUTPUT="${OUTPUT//'%'/'%25'}"
           OUTPUT="${OUTPUT//$'\n'/'%0A'}"
           OUTPUT="${OUTPUT//$'\r'/'%0D'}"
