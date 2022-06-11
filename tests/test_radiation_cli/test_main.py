@@ -66,6 +66,7 @@ def test_cli_run(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 9 mutations
+        Running baseline tests ..
         Running tests
 
         Surviving mutant in code.py:3
@@ -95,6 +96,7 @@ def test_cli_run_line_limit(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 3 mutations
+        Running baseline tests ..
         Running tests
 
         Surviving mutant in code.py:3
@@ -133,8 +135,82 @@ def test_cli_run_with_diff(project_path: Path) -> None:
     assert result.stdout.rstrip("\n") == _dedent(
         """
         Generated 3 mutations
+        Running baseline tests ..
         Running tests
         """
+    )
+    assert result.stderr == ""
+    assert result.exit_code == 0
+
+
+def test_cli_run_baseline_fails(project_path: Path) -> None:
+    cli_runner = CliRunner(mix_stderr=False)
+    result = cli_runner.invoke(
+        cli,
+        ["-p", str(project_path), "--run-command", "echo 'test text' && false", "run"],
+    )
+    assert result.stdout.rstrip("\n") == _dedent(
+        """
+        Generated 9 mutations
+        Running baseline tests ..
+        """
+    )
+    assert result.stderr == (
+        "test text\n"
+        "\n"
+        "Error: Cannot test mutations when the baseline tests "
+        "are failing (test command output printed above)\n"
+    )
+    assert result.exit_code == 1
+
+
+def test_cli_run_timeout_is_1_5x_of_baseline_duration(project_path: Path) -> None:
+    (project_path / "code.py").write_text(
+        _dedent(
+            """
+            def run_func(f):
+                return f(1)
+            """
+        )
+    )
+
+    (project_path / "test_code.py").write_text(
+        _dedent(
+            """
+            from time import sleep            
+            from code import run_func
+
+            def sleep_func(amount):
+                sleep(amount / 5)
+                return 5
+
+            def test_run_func() -> int:
+                assert run_func(sleep_func) == 5
+
+            test_run_func()
+            """  # noqa: W291
+        )
+    )
+
+    cli_runner = CliRunner(mix_stderr=False)
+    result = cli_runner.invoke(
+        cli,
+        ["-p", str(project_path), "run"],
+    )
+    assert result.stdout.rstrip("\n") == _dedent(
+        """
+        Generated 2 mutations
+        Running baseline tests ..
+        Running tests
+
+        Surviving mutant in code.py:2
+        1 def run_func(f):
+        2     return f(0)
+
+        Timed out mutant in code.py:2
+        1 def run_func(f):
+        2     return f(2)
+        """  # noqa: W291
     )
     assert result.stderr == ""
     assert result.exit_code == 0
